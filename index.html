@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>OpenMguesser</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#0f1420">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mapillary-js@4.1.2/dist/mapillary.css" integrity="sha256-CNtf+PBx+qpnfViYni98doVEL4uIJEeS7/DXaret0sc=" crossorigin="anonymous">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+  <!-- Home -->
+  <section id="home" class="screen active">
+    <div class="hero">
+      <h1>Open<span>M</span>guesser</h1>
+      <p>Sei dentro una mappa a 360°. Muoviti, cerca indizi, poi indovina dove sei. Gratis, senza account.</p>
+    </div>
+    <div class="card">
+      <label>Fonte immagini</label>
+      <div class="seg" id="providerSeg">
+        <button data-provider="mapillary" class="on">Mapillary</button>
+        <button data-provider="panoramax">Panoramax</button>
+        <button data-provider="google">Google</button>
+      </div>
+      <p class="hint">Mapillary: gratuita, già configurata. Panoramax: aperta, copertura soprattutto europea. Google: Street View ufficiale, serve la tua chiave API.</p>
+      <div id="tokenBox">
+        <label for="tokenInput">Chiave Mapillary personale (opzionale)</label>
+        <input id="tokenInput" type="password" placeholder="MLY|… (vuoto = predefinita)" autocomplete="off" spellcheck="false">
+      </div>
+      <div id="googleBox" style="display:none">
+        <label for="googleKeyInput">Chiave API Google Maps</label>
+        <input id="googleKeyInput" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false">
+        <p class="hint">Crea una chiave nella <a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" rel="noopener noreferrer">Google Cloud Console</a> e abilita <b>Maps JavaScript API</b> (serve la fatturazione attiva; Google offre un credito mensile). Limitala per referrer HTTP al tuo sito. La chiave resta salvata solo nel tuo browser e i costi sono a tuo carico.</p>
+      </div>
+
+      <label>Tempo per round</label>
+      <div class="seg" id="timeSeg">
+        <button data-time="0" class="on">Libero</button>
+        <button data-time="300">5 min</button>
+        <button data-time="120">2 min</button>
+      </div>
+      <label>Regole</label>
+      <div class="seg" id="ruleSeg">
+        <button data-rule="move" class="on">Muoversi</button>
+        <button data-rule="nomove">Fermo</button>
+      </div>
+      <button id="startBtn" class="primary">Gioca</button>
+      <p class="hint" id="bestLine"></p>
+    </div>
+  </section>
+
+  <!-- Gioco -->
+  <section id="game" class="screen">
+    <div id="viewerWrap">
+      <div id="viewer"></div>
+      <div id="viewerMsg">Cerco un posto…</div>
+      <div id="hud">
+        <span id="roundLbl"></span><span id="scoreLbl"></span><span id="timerLbl"></span>
+      </div>
+    </div>
+    <div id="guessPanel" class="small">
+      <button id="mapToggle" class="map-toggle" type="button" aria-expanded="false">Mappa ⤢</button>
+      <div id="guessMap"></div>
+      <button id="guessBtn" class="primary" disabled>Conferma risposta</button>
+    </div>
+  </section>
+
+  <!-- Risultato round -->
+  <section id="result" class="screen">
+    <div id="resultMap"></div>
+    <div class="sheet">
+      <h2 id="resTitle"></h2>
+      <p id="resDetail"></p>
+      <button id="nextBtn" class="primary">Avanti</button>
+    </div>
+  </section>
+
+  <!-- Fine -->
+  <section id="final" class="screen">
+    <div class="card center">
+      <h2>Partita finita</h2>
+      <div class="big" id="finalScore"></div>
+      <ul id="finalList"></ul>
+      <button id="shareBtn" class="ghost">Copia risultato</button>
+      <button id="againBtn" class="primary">Gioca ancora</button>
+    </div>
+  </section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/mapillary-js@4.1.2/dist/mapillary.js" integrity="sha256-BNAmDptrheA3ETCw+Rm/XwKrzWLvUm22zHYx5c9n/MY=" crossorigin="anonymous"></script>
+<script src="config.js"></script>
+<script src="config.local.js" onerror="void 0"></script>
+<script src="app.js"></script>
+</body>
+</html>
