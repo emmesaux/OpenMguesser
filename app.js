@@ -17,7 +17,7 @@ const DEFAULT_GOOGLE_KEY = CFG.googleKey || "";
 
 const $ = (id) => document.getElementById(id);
 const PMX = "https://api.panoramax.xyz/api";
-const state = { provider: "mapillary", prefetch: null, duel: null, time: 0, rule: "move", round: 0, total: 0, results: [], current: null, guess: null, timer: null, locked: false };
+const state = { provider: "mapillary", pack: "world", prefetch: null, duel: null, time: 0, rule: "move", round: 0, total: 0, results: [], current: null, guess: null, timer: null, locked: false };
 let guessMap, guessMarker, resultMap, viewer, landPolys = null;
 
 // ---------- utilità ----------
@@ -28,7 +28,7 @@ function haversineKm(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 const scoreFor = (km) => Math.round(MAX_SCORE * Math.exp(-km / SCORE_SCALE_KM));
-const fmtKm = (km) => (km < 1 ? `${Math.round(km * 1000)} m` : `${Math.round(km).toLocaleString("it-IT")} km`);
+const fmtKm = (km) => (km < 1 ? `${Math.round(km * 1000)} m` : `${Math.round(km).toLocaleString(loc())} km`);
 const show = (id) => document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
 const store = {
   get(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } },
@@ -54,7 +54,7 @@ function inPoly(x, y, poly) {
 async function loadLand() {
   if (landPolys) return;
   const res = await fetch(LAND_URL);
-  if (!res.ok) throw new Error("Impossibile caricare i confini delle terre emerse");
+  if (!res.ok) throw new Error(t("err.land"));
   const gj = await res.json();
   landPolys = [];
   for (const f of gj.features) {
@@ -94,11 +94,11 @@ async function imagesAround([lat, lon], _half, pano) {
     const p = new URLSearchParams({ access_token: getToken(), fields: "id,computed_geometry,is_pano", bbox, limit: "30" });
     if (pano) p.set("is_pano", "true");
     const res = await fetch(`${GRAPH}?${p}`, { signal: AbortSignal.timeout(8000) });
-    if (res.status === 401 || res.status === 403) throw Object.assign(new Error("Chiave Mapillary non valida"), { fatal: true });
+    if (res.status === 401 || res.status === 403) throw Object.assign(new Error(t("err.mlyKey")), { fatal: true });
     if (res.ok) return parseImages(await res.json());
     let err = null;
     try { err = (await res.json()).error; } catch (e) { /* corpo non JSON */ }
-    if (err && err.code === 190) throw Object.assign(new Error("Chiave Mapillary non valida"), { fatal: true });
+    if (err && err.code === 190) throw Object.assign(new Error(t("err.mlyKey")), { fatal: true });
     // Altri errori (area troppo grande o troppo densa): riprova più piccolo.
   }
   return [];
@@ -132,7 +132,7 @@ async function pmxAround([lat, lon], half) {
 }
 async function pmxLoad(col, id) {
   const res = await fetch(`${PMX}/collections/${encodeURIComponent(col)}/items/${encodeURIComponent(id)}`);
-  if (!res.ok) throw new Error("Immagine non disponibile");
+  if (!res.ok) throw new Error(t("err.imgUnavailable"));
   return pmxItem(await res.json());
 }
 
@@ -146,13 +146,13 @@ function loadGoogle(key) {
     window.gm_authFailure = () => {
       googleLoading = null;
       $("viewerMsg").style.display = "block";
-      $("viewerMsg").textContent = "Chiave Google non valida o API Maps JavaScript non abilitata.";
-      reject(Object.assign(new Error("Chiave Google non valida"), { fatal: true }));
+      $("viewerMsg").textContent = t("err.googleAuth");
+      reject(Object.assign(new Error(t("err.googleKey")), { fatal: true }));
     };
     const s = document.createElement("script");
     s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly&callback=__omgGoogleReady`;
     s.async = true;
-    s.onerror = () => { googleLoading = null; reject(Object.assign(new Error("Impossibile caricare Google Maps"), { fatal: true })); };
+    s.onerror = () => { googleLoading = null; reject(Object.assign(new Error(t("err.googleLoad")), { fatal: true })); };
     document.head.append(s);
   });
   return googleLoading;
@@ -161,7 +161,7 @@ function googlePanoNear([lat, lon]) {
   const sv = new google.maps.StreetViewService();
   return new Promise((resolve) => {
     sv.getPanorama({
-      location: { lat, lng: lon }, radius: 50000,
+      location: { lat, lng: lon }, radius: curatedPack() ? 800 : 50000, // luoghi precisi: cerca vicino
       source: google.maps.StreetViewSource.OUTDOOR, // solo Street View ufficiale all'aperto
       preference: google.maps.StreetViewPreference.NEAREST,
     }, (data, status) => {
@@ -173,6 +173,26 @@ function googlePanoNear([lat, lon]) {
       resolve([{ provider: "google", pano: true, id: data.location.pano, pos: [ll.lat(), ll.lng()] }]);
     });
   });
+}
+
+// ---------- mappe di gioco: da dove si estraggono i punti ----------
+const curatedPack = () => state.pack === "capitals" || state.pack === "landmarks";
+// Restituisce [lat, lon, nome?]. Capitali e luoghi famosi: punto dell'elenco con piccola variazione (circa 3 km).
+function randomSpotPoint() {
+  const P = window.PACKS || {};
+  if (curatedPack() && Array.isArray(P[state.pack]) && P[state.pack].length) {
+    const c = P[state.pack][Math.floor(Math.random() * P[state.pack].length)];
+    const j = () => (Math.random() - 0.5) * 0.06;
+    return [c[0] + j(), c[1] + j(), c[2]];
+  }
+  const r = P.regions && P.regions[state.pack];
+  if (r) {
+    for (let i = 0; i < 5000; i++) {
+      const lat = r[0] + Math.random() * (r[2] - r[0]), lon = r[1] + Math.random() * (r[3] - r[1]);
+      if (isLand(lon, lat)) return [lat, lon];
+    }
+  }
+  return randomLandPoint();
 }
 
 // ---------- scelta del posto ----------
@@ -187,17 +207,18 @@ async function findSpot(onProgress) {
   const PER_BATCH = state.provider === "google" ? 10 : state.provider === "mapillary" ? 24 : 16;
   for (let batch = 0; batch < 8; batch++) {
     onProgress(batch);
-    const pts = Array.from({ length: PER_BATCH }, randomLandPoint);
+    const pts = Array.from({ length: PER_BATCH }, randomSpotPoint);
     const search = state.provider === "panoramax" ? (pt) => pmxAround(pt, 0.05)
       : state.provider === "google" ? googlePanoNear
         : (pt) => imagesAround(pt, 0.05, false);
-    const hits = (await Promise.all(pts.map((pt) => quiet(search(pt))))).flat();
+    // Il nome del luogo (capitali, luoghi famosi) si mostra solo dopo la risposta.
+    const hits = (await Promise.all(pts.map(async (pt) => (await quiet(search(pt))).map((h) => ({ ...h, label: pt[2] || null }))))).flat();
     if (hits.length) {
       const panos = hits.filter((h) => h.pano);
       return pick(panos.length ? panos : hits);
     }
   }
-  throw new Error("Non ho trovato un posto con copertura. Riprova.");
+  throw new Error(t("err.noSpot"));
 }
 
 // ---------- mappe ----------
@@ -233,9 +254,9 @@ let panelPinned = false;
 function setPanelOpen(open) {
   const panel = $("guessPanel");
   panel.classList.toggle("small", !open);
-  const t = $("mapToggle");
-  t.textContent = open ? "Riduci ⤡" : (canHover ? "Mappa ⤢" : "🗺 Rispondi");
-  t.setAttribute("aria-expanded", String(open));
+  const tg = $("mapToggle");
+  tg.textContent = open ? t("map.close") : (canHover ? t("map.desk") : t("map.touch"));
+  tg.setAttribute("aria-expanded", String(open));
   setTimeout(() => guessMap && guessMap.invalidateSize(), 220);
 }
 
@@ -266,7 +287,7 @@ function openPanoramax(item) {
   const box = $("viewer");
   const img = document.createElement("img");
   img.className = "pmx-img";
-  img.alt = "Dove sei?";
+  img.alt = t("game.where");
   img.referrerPolicy = "no-referrer";
   box.append(img);
   const show = (it) => { state.cursor = it; img.src = it.src; if (prevBtn) prevBtn.disabled = !it.prev; if (nextBtn) nextBtn.disabled = !it.next; };
@@ -285,8 +306,8 @@ function openPanoramax(item) {
       });
       return b;
     };
-    prevBtn = mk("◀ Indietro", "prev");
-    nextBtn = mk("Avanti ▶", "next");
+    prevBtn = mk(t("nav.back"), "prev");
+    nextBtn = mk(t("nav.fwd"), "next");
     nav.append(prevBtn, nextBtn);
     box.append(nav);
   }
@@ -320,13 +341,13 @@ async function startRound() {
   panelPinned = false;
   setPanelOpen(false);
   setTimeout(() => guessMap.invalidateSize(), 60);
-  $("roundLbl").textContent = `Round ${state.round + 1}/${ROUNDS}`;
+  $("roundLbl").textContent = t("game.round", { n: state.round + 1, max: ROUNDS });
   renderPips();
-  $("scoreLbl").textContent = `${state.total.toLocaleString("it-IT")} pt`;
+  $("scoreLbl").textContent = t("game.pts", { n: state.total.toLocaleString(loc()) });
   $("timerLbl").textContent = "";
   const msg = $("viewerMsg");
   msg.style.display = "block";
-  msg.textContent = "Cerco un posto…";
+  msg.textContent = t("game.finding");
   try {
     // Il posto del round è già pronto se è stato cercato mentre giocavi il precedente.
     if (state.duel) {
@@ -338,7 +359,7 @@ async function startRound() {
       state.prefetch = null;
       state.current = ready
         ? await ready
-        : await findSpot((n) => { msg.textContent = n ? `Cerco un posto… (tentativo ${n + 1})` : "Cerco un posto…"; });
+        : await findSpot((n) => { msg.textContent = n ? t("game.findingN", { n: n + 1 }) : t("game.finding"); });
     }
   } catch (e) {
     msg.textContent = e.message;
@@ -383,11 +404,13 @@ function submitGuess(timeout) {
 function showResult(target, km, pts, timeout) {
   closeViewer();
   show("result");
-  $("resTitle").textContent = `+${pts.toLocaleString("it-IT")} punti`;
+  $("resTitle").textContent = t("res.points", { n: pts.toLocaleString(loc()) });
   $("resDetail").textContent = km === null
-    ? (timeout ? "Tempo scaduto, nessuna risposta." : "Nessuna risposta.")
-    : `${fmtKm(km)} dal posto reale`;
-  $("nextBtn").textContent = state.round + 1 >= ROUNDS ? "Vedi il risultato" : "Avanti";
+    ? (timeout ? t("res.timeout") : t("res.none"))
+    : t("res.distance", { d: fmtKm(km) });
+  const label = state.current && state.current.label;
+  $("resPlace").textContent = label ? t("res.near", { name: label }) : "";
+  $("nextBtn").textContent = state.round + 1 >= ROUNDS ? t("res.see") : t("res.next");
   if (resultMap) resultMap.remove();
   resultMap = L.map("resultMap", { worldCopyJump: true }).setView(target, 3);
   tiles().addTo(resultMap);
@@ -413,11 +436,11 @@ function renderPips() {
 
 // Il totale sale fino al valore finale; senza animazione se l'utente la disattiva.
 function countUp(el, to) {
-  if (!to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to.toLocaleString("it-IT"); return; }
+  if (!to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to.toLocaleString(loc()); return; }
   const t0 = performance.now(), D = 900;
   const step = (t) => {
     const k = Math.min(1, (t - t0) / D);
-    el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString("it-IT");
+    el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString(loc());
     if (k < 1) requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
@@ -436,9 +459,9 @@ function finish() {
   $("finalList").replaceChildren(...state.results.map((r, i) => {
     const li = document.createElement("li"), rn = document.createElement("span"), rv = document.createElement("span");
     const bar = document.createElement("span"), fill = document.createElement("i");
-    rn.className = "rn"; rn.textContent = `Round ${i + 1}`;
+    rn.className = "rn"; rn.textContent = t("final.round", { n: i + 1 });
     rv.className = "rv";
-    rv.textContent = `${r.km === null ? "nessuna risposta" : fmtKm(r.km)}, ${r.pts.toLocaleString("it-IT")} punti`;
+    rv.textContent = t("final.row", { d: r.km === null ? t("final.noAnswer") : fmtKm(r.km), n: r.pts.toLocaleString(loc()) });
     bar.className = "bar";
     fill.style.width = `${Math.round((r.pts / MAX_SCORE) * 100)}%`;
     bar.append(fill);
@@ -459,7 +482,7 @@ function begin() {
     const token = $("tokenInput").value.trim() || DEFAULT_MLY_TOKEN;
     if (!/^MLY\|/.test(token)) {
       $("tokenInput").focus();
-      $("bestLine").textContent = "Inserisci la tua chiave Mapillary (inizia con MLY|), oppure scegli Panoramax.";
+      $("bestLine").textContent = t("val.mly");
       return;
     }
     store.set(TOKEN_KEY, $("tokenInput").value.trim());
@@ -468,7 +491,7 @@ function begin() {
     const key = $("googleKeyInput").value.trim() || DEFAULT_GOOGLE_KEY;
     if (!/^AIza[0-9A-Za-z_-]{20,}$/.test(key)) {
       $("googleKeyInput").focus();
-      $("bestLine").textContent = "Inserisci una chiave API Google valida (inizia con AIza).";
+      $("bestLine").textContent = t("val.google");
       return;
     }
     store.set(GKEY_KEY, $("googleKeyInput").value.trim());
@@ -492,6 +515,12 @@ $("providerSeg").addEventListener("click", () => {
   $("googleBox").style.display = state.provider === "google" ? "block" : "none";
   $("bestLine").textContent = "";
 });
+bindSeg("packRow", "pack", "pack", String);
+$("packRow").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  $("packRow").querySelectorAll("button").forEach((x) => x.setAttribute("aria-checked", String(x === b)));
+});
 bindSeg("timeSeg", "time", "time", Number);
 bindSeg("ruleSeg", "rule", "rule", String);
 $("startBtn").addEventListener("click", begin);
@@ -499,8 +528,8 @@ $("guessBtn").addEventListener("click", () => submitGuess(false));
 $("nextBtn").addEventListener("click", nextRound);
 $("againBtn").addEventListener("click", () => { show("home"); renderHome(); });
 $("shareBtn").addEventListener("click", async () => {
-  const txt = `OpenMguesser: ${state.total.toLocaleString("it-IT")} punti in ${ROUNDS} round`;
-  try { await navigator.clipboard.writeText(txt); $("shareBtn").textContent = "Copiato"; } catch (e) { $("shareBtn").textContent = txt; }
+  const txt = t("final.share", { n: state.total.toLocaleString(loc()), r: ROUNDS });
+  try { await navigator.clipboard.writeText(txt); $("shareBtn").textContent = t("final.copied"); } catch (e) { $("shareBtn").textContent = txt; }
 });
 function renderHome() {
   // Mostra solo la chiave personale (non quella predefinita).
@@ -508,7 +537,22 @@ function renderHome() {
   $("googleKeyInput").value = getGoogleKey();
   try {
     const b = Number(localStorage.getItem(BEST_KEY) || 0);
-    $("bestLine").textContent = b ? `Record personale: ${b.toLocaleString("it-IT")} pt` : "";
+    $("bestLine").textContent = b ? t("home.best", { n: b.toLocaleString(loc()) }) : "";
   } catch (e) { /* ignora */ }
 }
 renderHome();
+
+// Fonte predefinita: Google se è disponibile una chiave (del sito o personale), altrimenti Mapillary.
+function applyDefaultProvider() {
+  state.provider = DEFAULT_GOOGLE_KEY || getGoogleKey() ? "google" : "mapillary";
+  document.querySelectorAll("#providerSeg button").forEach((b) => b.classList.toggle("on", b.dataset.provider === state.provider));
+  $("tokenBox").style.display = state.provider === "mapillary" ? "block" : "none";
+  $("googleBox").style.display = state.provider === "google" ? "block" : "none";
+}
+applyDefaultProvider();
+
+// Cambio lingua: ridisegna i testi costruiti dal codice.
+window.addEventListener("omg-lang-changed", () => {
+  renderHome();
+  setPanelOpen(!$("guessPanel").classList.contains("small"));
+});

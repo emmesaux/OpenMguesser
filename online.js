@@ -31,8 +31,8 @@ const O = (window.OMG_ONLINE = {
   // Profilo personalizzato: nome 3-20 caratteri (lettere, numeri, spazio, _ e -) e icona dalla lista.
   setProfile({ name, icon }) {
     const n = String(name || "").trim().replace(/\s+/g, " ");
-    if (!/^[A-Za-z0-9_ -]{3,20}$/.test(n)) throw new Error("Il nome deve avere 3-20 caratteri: lettere, numeri, spazio, _ o -.");
-    if (!ICONS.includes(icon)) throw new Error("Scegli un'icona dalla lista.");
+    if (!/^[A-Za-z0-9_ -]{3,20}$/.test(n)) throw new Error(t("err.name"));
+    if (!ICONS.includes(icon)) throw new Error(t("err.icon"));
     O.profile = { name: n, icon };
     saveLocal(O.profile);
     if (O.enabled) O._syncProfile().catch(() => {});
@@ -68,6 +68,7 @@ async function init() {
     const u = auth.currentUser;
     O.uid = u.uid;
     O.anonymous = u.isAnonymous;
+    O.email = u.email || "";
     if (!O.anonymous) {
       // Account Google: ripristina il profilo salvato (nome e icona scelti, non quelli di Google).
       try {
@@ -118,6 +119,25 @@ async function init() {
     await useCurrentUser();
   };
 
+  // Elimina profilo e punteggi dal database e l'account di accesso, poi riparte come nuovo ospite.
+  O.deleteAccount = async () => {
+    const u = auth.currentUser;
+    if (!u) throw new Error("no-user");
+    const uid = u.uid;
+    // Per gli account Google serve un accesso recente: si chiede di confermare con Google prima di cancellare.
+    if (!u.isAnonymous) await authM.reauthenticateWithPopup(u, new authM.GoogleAuthProvider());
+    const mine = await fs.getDocs(fs.query(fs.collection(db, "scores"), fs.where("uid", "==", uid)));
+    const batch = fs.writeBatch(db);
+    mine.forEach((d) => batch.delete(d.ref));
+    batch.delete(fs.doc(db, "players", uid));
+    await batch.commit();
+    await authM.deleteUser(u);
+    await authM.signInAnonymously(auth);
+    O.profile = newProfile();
+    saveLocal(O.profile);
+    await useCurrentUser();
+  };
+
   O.submitScore = (total, provider) => fs.addDoc(fs.collection(db, "scores"), {
     uid: O.uid, name: O.profile.name, icon: O.profile.icon, total: Math.round(total),
     provider: String(provider || ""), createdAt: fs.serverTimestamp(),
@@ -158,19 +178,19 @@ async function init() {
         if (e.message !== "taken") throw e;
       }
     }
-    throw new Error("Non riesco a creare la stanza, riprova.");
+    throw new Error(t("err.createRoom"));
   };
 
   O.joinRoom = async (rawCode) => {
     const code = String(rawCode || "").trim().toUpperCase();
-    if (!/^[A-Z0-9]{5}$/.test(code)) throw new Error("Il codice ha 5 caratteri.");
+    if (!/^[A-Z0-9]{5}$/.test(code)) throw new Error(t("err.code"));
     const ref = fs.doc(db, "rooms", code);
     const room = await fs.runTransaction(db, async (tx) => {
       const snap = await tx.get(ref);
-      if (!snap.exists()) throw new Error("Stanza non trovata.");
+      if (!snap.exists()) throw new Error(t("err.roomNotFound"));
       const d = snap.data();
-      if (d.host === O.uid) throw new Error("Questa stanza l'hai creata tu: condividi il codice con un amico.");
-      if (d.guest && d.guest !== O.uid) throw new Error("La stanza è già piena.");
+      if (d.host === O.uid) throw new Error(t("err.ownRoom"));
+      if (d.guest && d.guest !== O.uid) throw new Error(t("err.roomFull"));
       if (d.guest === O.uid) return d;
       const patch = { guest: O.uid, guestName: O.profile.name, guestIcon: O.profile.icon, status: "playing" };
       tx.update(ref, patch);

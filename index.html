@@ -24,23 +24,33 @@
   <section id="home" class="screen scroll active">
     <header class="top">
       <span class="brand" role="img" aria-label="OpenMguesser"><span class="wm" aria-hidden="true">Open<span class="wm-pin"><b>M</b></span>guesser</span></span>
-      <div id="profile" class="profile">
-        <span id="pIcon" aria-hidden="true"></span>
-        <span id="pName"></span>
-        <button id="pReroll" class="mini" type="button" title="Nome e icona casuali" aria-label="Nome e icona casuali">🎲</button>
-        <button id="pEdit" class="mini" type="button" title="Personalizza profilo" aria-label="Personalizza profilo">✏️</button>
+      <div class="top-right">
+        <div class="lang" role="group" data-i18n-title="top.langLabel" title="Lingua" aria-label="Lingua">
+          <button type="button" data-lang="it">IT</button>
+          <button type="button" data-lang="en">EN</button>
+        </div>
+        <button id="topAuthBtn" class="auth-top" type="button" hidden>Accedi</button>
       </div>
     </header>
 
+    <div class="profile-row">
+      <button id="pEdit" class="profile-chip" type="button" data-i18n-title="top.settings" title="Impostazioni" aria-label="Impostazioni">
+        <span id="pIcon" aria-hidden="true"></span>
+        <span id="pName"></span>
+        <span id="pBadge" class="badge guest" hidden></span>
+        <span class="chip-edit" aria-hidden="true">✎</span>
+      </button>      <p class="hint" id="authHint" role="status"></p>
+    </div>
+
     <div class="home-grid">
       <div class="hero">
-        <h1>Dove sei?</h1>
-        <p class="lede">Cinque posti in giro per il mondo, nessun cartello. Guardati intorno, poi segna il punto sulla mappa.</p>
-        <button id="startBtn" class="primary big">Inizia a giocare</button>
+        <h1 data-i18n="home.h1">Dove sei?</h1>
+        <p class="lede" data-i18n="home.lede">Cinque posti in giro per il mondo, nessun cartello. Guardati intorno, poi segna il punto sulla mappa.</p>
+        <button id="startBtn" class="primary big" data-i18n="home.start">Inizia a giocare</button>
         <p class="hint" id="bestLine"></p>
         <div class="sub-actions">
-          <button id="boardBtn" class="ghost" disabled>Classifica</button>
-          <button id="duelBtn" class="ghost" disabled>Sfida un amico</button>
+          <button id="boardBtn" class="ghost" data-i18n="home.board" disabled>Classifica</button>
+          <button id="duelBtn" class="ghost" data-i18n="home.duel" disabled>Sfida un amico</button>
         </div>
         <p class="hint" id="onlineHint"></p>
       </div>
@@ -64,94 +74,126 @@
       </div>
     </div>
 
+    <section class="maps" aria-labelledby="mapsTitle">
+      <h2 id="mapsTitle" data-i18n="maps.title">Scegli la mappa</h2>
+      <div class="map-row" id="packRow" role="radiogroup" aria-labelledby="mapsTitle">
+        <button type="button" class="map-card on" data-pack="world" role="radio" aria-checked="true"><span class="mc-ico" aria-hidden="true">🌍</span><span class="mc-t" data-i18n="pack.world.t">Mondo</span><span class="mc-s" data-i18n="pack.world.s">Ovunque, a caso</span></button>
+        <button type="button" class="map-card" data-pack="capitals" role="radio" aria-checked="false"><span class="mc-ico" aria-hidden="true">🏙️</span><span class="mc-t" data-i18n="pack.capitals.t">Capitali</span><span class="mc-s" data-i18n="pack.capitals.s">Dai centri delle capitali</span></button>
+        <button type="button" class="map-card" data-pack="landmarks" role="radio" aria-checked="false"><span class="mc-ico" aria-hidden="true">🗼</span><span class="mc-t" data-i18n="pack.landmarks.t">Luoghi famosi</span><span class="mc-s" data-i18n="pack.landmarks.s">Monumenti da riconoscere</span></button>
+        <button type="button" class="map-card" data-pack="europe" role="radio" aria-checked="false"><span class="mc-ico" aria-hidden="true">🏰</span><span class="mc-t" data-i18n="pack.europe.t">Europa</span><span class="mc-s" data-i18n="pack.europe.s">Solo il continente</span></button>
+        <button type="button" class="map-card" data-pack="americas" role="radio" aria-checked="false"><span class="mc-ico" aria-hidden="true">🌎</span><span class="mc-t" data-i18n="pack.americas.t">Americhe</span><span class="mc-s" data-i18n="pack.americas.s">Nord, Centro e Sud</span></button>
+        <button type="button" class="map-card" data-pack="asia" role="radio" aria-checked="false"><span class="mc-ico" aria-hidden="true">🌏</span><span class="mc-t" data-i18n="pack.asia.t">Asia e Oceania</span><span class="mc-s" data-i18n="pack.asia.s">Da Istanbul al Pacifico</span></button>
+        <button type="button" class="map-card" data-pack="africa" role="radio" aria-checked="false"><span class="mc-ico" aria-hidden="true">🦁</span><span class="mc-t" data-i18n="pack.africa.t">Africa</span><span class="mc-s" data-i18n="pack.africa.s">Dal Cairo al Capo</span></button>
+      </div>
+    </section>
+
     <details class="options">
-      <summary>Opzioni di gioco</summary>
+      <summary data-i18n="opt.summary">Opzioni di gioco</summary>
       <div class="options-body">
-        <label>Fonte immagini</label>
+        <label data-i18n="opt.source">Fonte immagini</label>
         <div class="seg" id="providerSeg">
+          <button data-provider="google">Google</button>
           <button data-provider="mapillary" class="on">Mapillary</button>
           <button data-provider="panoramax">Panoramax</button>
-          <button data-provider="google">Google</button>
         </div>
-        <p class="hint">Mapillary: gratuita, già configurata. Panoramax: aperta, copertura soprattutto europea. Google: Street View ufficiale, serve la tua chiave API.</p>
+        <p class="hint" data-i18n="opt.sourceHint">Google: Street View ufficiale, la copertura migliore (predefinita se è configurata una chiave). Mapillary: gratuita. Panoramax: aperta, copertura soprattutto europea.</p>
         <div id="tokenBox">
-          <label for="tokenInput">Chiave Mapillary personale (opzionale)</label>
-          <input id="tokenInput" type="password" placeholder="MLY|… (vuoto = predefinita)" autocomplete="off" spellcheck="false">
+          <label for="tokenInput" data-i18n="opt.mlyLabel">Chiave Mapillary personale (opzionale)</label>
+          <input id="tokenInput" type="password" data-i18n-ph="opt.mlyPh" placeholder="MLY|… (vuoto = predefinita)" autocomplete="off" spellcheck="false">
         </div>
         <div id="googleBox" style="display:none">
-          <label for="googleKeyInput">Chiave API Google Maps</label>
+          <label for="googleKeyInput" data-i18n="opt.googleLabel">Chiave API Google Maps</label>
           <input id="googleKeyInput" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false">
-          <p class="hint">Crea una chiave nella <a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" rel="noopener noreferrer">Google Cloud Console</a> e abilita <b>Maps JavaScript API</b> (serve la fatturazione attiva; Google offre un credito mensile). Limitala per referrer HTTP al tuo sito. La chiave resta salvata solo nel tuo browser e i costi sono a tuo carico.</p>
+          <p class="hint"><span data-i18n="opt.googleHint1">Crea una chiave nella</span> <a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" rel="noopener noreferrer" data-i18n="opt.googleLink">Google Cloud Console</a> <span data-i18n="opt.googleHint2">e abilita Maps JavaScript API (serve la fatturazione attiva; Google offre un credito mensile). Limitala per referrer HTTP al tuo sito. La chiave resta salvata solo nel tuo browser e i costi sono a tuo carico.</span></p>
         </div>
 
-        <label>Tempo per round</label>
+        <label data-i18n="opt.time">Tempo per round</label>
         <div class="seg" id="timeSeg">
-          <button data-time="0" class="on">Libero</button>
+          <button data-time="0" class="on" data-i18n="time.free">Libero</button>
           <button data-time="300">5 min</button>
           <button data-time="120">2 min</button>
         </div>
-        <label>Movimento</label>
+        <label data-i18n="opt.move">Movimento</label>
         <div class="seg" id="ruleSeg">
-          <button data-rule="move" class="on">Si cammina</button>
-          <button data-rule="nomove">Fermo</button>
+          <button data-rule="move" class="on" data-i18n="rule.move">Si cammina</button>
+          <button data-rule="nomove" data-i18n="rule.nomove">Fermo</button>
         </div>
       </div>
     </details>
 
-    <div class="auth-row">
-      <button id="authBtn" class="mini wide" type="button" hidden>Accedi con Google</button>
-      <p class="hint" id="authHint"></p>
-    </div>
-
     <footer class="legal">
-      <span class="tag">OpenMguesser, il gioco di Mario</span>
-      <a href="https://github.com/emmesaux/OpenMguesser/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
-      <a href="https://github.com/emmesaux/OpenMguesser" target="_blank" rel="noopener noreferrer">Codice sorgente</a>
+      <span class="tag" data-i18n="legal.tag">OpenMguesser, il gioco di Mario</span>
+      <a href="https://github.com/emmesaux/OpenMguesser/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" data-i18n="legal.privacy">Privacy</a>
+      <a href="https://github.com/emmesaux/OpenMguesser" target="_blank" rel="noopener noreferrer" data-i18n="legal.source">Codice sorgente</a>
     </footer>
   </section>
 
-  <!-- Personalizza profilo -->
+  <!-- Impostazioni -->
   <section id="profileEdit" class="screen scroll">
     <div class="sheet-card">
-      <h2>Il tuo profilo</h2>
-      <label for="nameInput">Nome (3-20 caratteri)</label>
+      <h2 data-i18n="set.title">Impostazioni</h2>
+
+      <h3 data-i18n="set.profile">Profilo</h3>
+      <label for="nameInput" data-i18n="set.name">Nome (3-20 caratteri)</label>
       <input id="nameInput" type="text" maxlength="20" autocomplete="off" spellcheck="false">
-      <label>Icona</label>
+      <button id="rerollBtn" class="ghost small" type="button" data-i18n="set.random">🎲 Nome e icona casuali</button>
+      <label data-i18n="set.icon">Icona</label>
       <div id="iconGrid" class="icon-grid"></div>
       <p class="hint" id="editMsg"></p>
-      <button id="saveProfileBtn" class="primary">Salva</button>
-      <button id="cancelProfileBtn" class="ghost">Annulla</button>
+      <button id="saveProfileBtn" class="primary" data-i18n="set.save">Salva</button>
+
+      <h3 data-i18n="set.lang">Lingua</h3>
+      <div class="seg lang-seg" role="group">
+        <button type="button" data-lang="it">Italiano</button>
+        <button type="button" data-lang="en">English</button>
+      </div>
+
+      <h3 data-i18n="set.account">Account</h3>
+      <p class="hint" id="accountStatus"></p>
+      <button id="accAuthBtn" class="ghost"></button>
+      <div id="deleteBox">
+        <button id="deleteBtn" class="danger" data-i18n="set.delete">Elimina account e dati</button>
+        <p class="hint" data-i18n="set.deleteHint"></p>
+        <div id="deleteConfirm" hidden>
+          <p id="deleteAsk" class="warn" data-i18n="set.deleteAsk"></p>
+          <button id="deleteYes" class="danger solid" data-i18n="set.deleteYes">Sì, elimina</button>
+          <button id="deleteNo" class="ghost" data-i18n="set.deleteNo">No, annulla</button>
+        </div>
+        <p class="hint" id="deleteMsg"></p>
+      </div>
+
+      <button id="cancelProfileBtn" class="ghost" data-i18n="set.close">Chiudi</button>
     </div>
   </section>
 
   <!-- Classifica globale -->
   <section id="board" class="screen scroll">
     <div class="sheet-card">
-      <h2>Classifica globale</h2>
+      <h2 data-i18n="board.title">Classifica globale</h2>
       <p class="hint" id="boardMsg"></p>
       <ol id="boardList"></ol>
-      <button id="boardBack" class="ghost">Indietro</button>
+      <button id="boardBack" class="ghost" data-i18n="board.back">Indietro</button>
     </div>
   </section>
 
   <!-- Sfida 1 contro 1 -->
   <section id="lobby" class="screen scroll">
     <div class="sheet-card center">
-      <h2>Sfida un amico</h2>
-      <p class="hint">Stessi 5 posti per entrambi: vince chi totalizza più punti. Fonte, tempo e movimento sono quelli scelti nelle opzioni di gioco.</p>
+      <h2 data-i18n="lobby.title">Sfida un amico</h2>
+      <p class="hint" data-i18n="lobby.hint">Stessi 5 posti per entrambi: vince chi totalizza più punti. Fonte, tempo e movimento sono quelli scelti nelle opzioni di gioco.</p>
       <div id="lobbyMenu">
-        <button id="createRoomBtn" class="primary">Crea stanza</button>
-        <label for="joinCode">Hai un codice?</label>
+        <button id="createRoomBtn" class="primary" data-i18n="lobby.create">Crea stanza</button>
+        <label for="joinCode" data-i18n="lobby.haveCode">Hai un codice?</label>
         <input id="joinCode" type="text" maxlength="5" placeholder="ABCDE" autocomplete="off" spellcheck="false" class="code-input">
-        <button id="joinBtn" class="ghost">Entra</button>
+        <button id="joinBtn" class="ghost" data-i18n="lobby.join">Entra</button>
       </div>
       <div id="lobbyWait" style="display:none">
         <div class="ticket" id="roomCode"></div>
         <p id="lobbyStatus"></p>
-        <button id="copyLinkBtn" class="ghost">Copia link di invito</button>
+        <button id="copyLinkBtn" class="ghost" data-i18n="lobby.copy">Copia link di invito</button>
       </div>
       <p class="hint" id="lobbyMsg"></p>
-      <button id="lobbyBack" class="ghost">Indietro</button>
+      <button id="lobbyBack" class="ghost" data-i18n="lobby.back">Indietro</button>
     </div>
   </section>
 
@@ -169,7 +211,7 @@
     <div id="guessPanel" class="small">
       <button id="mapToggle" class="map-toggle" type="button" aria-expanded="false">Mappa ⤢</button>
       <div id="guessMap"></div>
-      <button id="guessBtn" class="primary" disabled>Conferma risposta</button>
+      <button id="guessBtn" class="primary" data-i18n="game.confirm" disabled>Conferma risposta</button>
     </div>
   </section>
 
@@ -179,6 +221,7 @@
     <div class="sheet">
       <h2 id="resTitle"></h2>
       <p id="resDetail"></p>
+      <p id="resPlace"></p>
       <p id="oppLine"></p>
       <button id="nextBtn" class="primary">Avanti</button>
     </div>
@@ -187,17 +230,19 @@
   <!-- Fine -->
   <section id="final" class="screen scroll">
     <div class="sheet-card center">
-      <h2>Partita finita</h2>
+      <h2 data-i18n="final.title">Partita finita</h2>
       <div class="big" id="finalScore"></div>
       <div id="duelBox" class="duel-box" style="display:none"></div>
       <ul id="finalList"></ul>
-      <button id="shareBtn" class="ghost">Copia risultato</button>
-      <button id="againBtn" class="primary">Gioca ancora</button>
+      <button id="shareBtn" class="ghost" data-i18n="final.copyBtn">Copia risultato</button>
+      <button id="againBtn" class="primary" data-i18n="final.again">Gioca ancora</button>
     </div>
   </section>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/mapillary-js@4.1.2/dist/mapillary.js" integrity="sha256-BNAmDptrheA3ETCw+Rm/XwKrzWLvUm22zHYx5c9n/MY=" crossorigin="anonymous"></script>
+<script src="i18n.js"></script>
+<script src="packs.js"></script>
 <script src="config.js"></script>
 <script src="config.local.js" onerror="void 0"></script>
 <script src="app.js"></script>
