@@ -21,7 +21,8 @@ service cloud.firestore {
     match /players/{uid} {
       allow read: if signedIn();
       allow create, update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.name is string && request.resource.data.name.size() <= 24
+        && request.resource.data.name is string
+        && request.resource.data.name.matches('^[A-Za-z0-9_ -]{3,20}$')
         && request.resource.data.icon is string && request.resource.data.icon.size() <= 8
         && retentionOk();
       allow delete: if signedIn() && request.auth.uid == uid;
@@ -34,7 +35,8 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.total is int
         && request.resource.data.total >= 0 && request.resource.data.total <= 25000
-        && request.resource.data.name is string && request.resource.data.name.size() <= 24
+        && request.resource.data.name is string
+        && request.resource.data.name.matches('^[A-Za-z0-9_ -]{3,20}$')
         && request.resource.data.createdAt == request.time
         && retentionOk();
       allow update: if false;

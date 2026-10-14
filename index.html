@@ -8,74 +8,124 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>OpenMguesser</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<meta name="theme-color" content="#0f1420">
+<meta name="theme-color" content="#EAF3F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#08171F" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mapillary-js@4.1.2/dist/mapillary.css" integrity="sha256-CNtf+PBx+qpnfViYni98doVEL4uIJEeS7/DXaret0sc=" crossorigin="anonymous">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main id="app">
+
   <!-- Home -->
-  <section id="home" class="screen active">
-    <div class="hero">
-      <h1>Open<span>M</span>guesser</h1>
-      <p>Sei dentro una mappa a 360°. Muoviti, cerca indizi, poi indovina dove sei. Gratis, senza account.</p>
+  <section id="home" class="screen scroll active">
+    <header class="top">
+      <span class="brand"><img src="favicon.svg" width="34" height="34" alt="">OpenMguesser</span>
       <div id="profile" class="profile">
         <span id="pIcon" aria-hidden="true"></span>
         <span id="pName"></span>
-        <button id="pReroll" class="mini" type="button" title="Cambia nome e icona" aria-label="Cambia nome e icona">🎲</button>
+        <button id="pReroll" class="mini" type="button" title="Nome e icona casuali" aria-label="Nome e icona casuali">🎲</button>
+        <button id="pEdit" class="mini" type="button" title="Personalizza profilo" aria-label="Personalizza profilo">✏️</button>
       </div>
-      <div class="auth-row">
-        <button id="authBtn" class="mini wide" type="button" hidden>Accedi con Google</button>
-      </div>
-      <p class="hint" id="authHint"></p>
-    </div>
-    <div class="card">
-      <label>Fonte immagini</label>
-      <div class="seg" id="providerSeg">
-        <button data-provider="mapillary" class="on">Mapillary</button>
-        <button data-provider="panoramax">Panoramax</button>
-        <button data-provider="google">Google</button>
-      </div>
-      <p class="hint">Mapillary: gratuita, già configurata. Panoramax: aperta, copertura soprattutto europea. Google: Street View ufficiale, serve la tua chiave API.</p>
-      <div id="tokenBox">
-        <label for="tokenInput">Chiave Mapillary personale (opzionale)</label>
-        <input id="tokenInput" type="password" placeholder="MLY|… (vuoto = predefinita)" autocomplete="off" spellcheck="false">
-      </div>
-      <div id="googleBox" style="display:none">
-        <label for="googleKeyInput">Chiave API Google Maps</label>
-        <input id="googleKeyInput" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false">
-        <p class="hint">Crea una chiave nella <a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" rel="noopener noreferrer">Google Cloud Console</a> e abilita <b>Maps JavaScript API</b> (serve la fatturazione attiva; Google offre un credito mensile). Limitala per referrer HTTP al tuo sito. La chiave resta salvata solo nel tuo browser e i costi sono a tuo carico.</p>
+    </header>
+
+    <div class="home-grid">
+      <div class="hero">
+        <h1>Dove sei?</h1>
+        <p class="lede">Cinque posti in giro per il mondo, nessun cartello. Guardati intorno, poi segna il punto sulla mappa.</p>
+        <button id="startBtn" class="primary big">Inizia a giocare</button>
+        <p class="hint" id="bestLine"></p>
+        <div class="sub-actions">
+          <button id="boardBtn" class="ghost" disabled>Classifica</button>
+          <button id="duelBtn" class="ghost" disabled>Sfida un amico</button>
+        </div>
+        <p class="hint" id="onlineHint"></p>
       </div>
 
-      <label>Tempo per round</label>
-      <div class="seg" id="timeSeg">
-        <button data-time="0" class="on">Libero</button>
-        <button data-time="300">5 min</button>
-        <button data-time="120">2 min</button>
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 340 230" class="art-svg" focusable="false">
+          <path class="arc" pathLength="1" d="M62 176 Q172 14 282 122" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+          <circle class="target" cx="282" cy="122" r="11" fill="var(--sun)" stroke="currentColor" stroke-width="3.5"/>
+          <ellipse class="shadow" cx="62" cy="178" rx="16" ry="5" fill="currentColor" opacity=".18"/>
+          <g transform="translate(62 176)">
+            <g class="pin">
+              <path d="M0 0C-13-20-21-30-21-42a21 21 0 1 1 42 0C21-30 13-20 0 0z" fill="var(--pin)" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>
+              <circle cx="0" cy="-42" r="7.5" fill="var(--card)"/>
+            </g>
+          </g>
+          <g class="dist">
+            <rect x="136" y="48" width="104" height="34" rx="17" fill="var(--card)" stroke="currentColor" stroke-width="3"/>
+            <text x="188" y="71" text-anchor="middle" class="dist-text">1 284 km</text>
+          </g>
+        </svg>
       </div>
-      <label>Regole</label>
-      <div class="seg" id="ruleSeg">
-        <button data-rule="move" class="on">Muoversi</button>
-        <button data-rule="nomove">Fermo</button>
+    </div>
+
+    <details class="options">
+      <summary>Opzioni di gioco</summary>
+      <div class="options-body">
+        <label>Fonte immagini</label>
+        <div class="seg" id="providerSeg">
+          <button data-provider="mapillary" class="on">Mapillary</button>
+          <button data-provider="panoramax">Panoramax</button>
+          <button data-provider="google">Google</button>
+        </div>
+        <p class="hint">Mapillary: gratuita, già configurata. Panoramax: aperta, copertura soprattutto europea. Google: Street View ufficiale, serve la tua chiave API.</p>
+        <div id="tokenBox">
+          <label for="tokenInput">Chiave Mapillary personale (opzionale)</label>
+          <input id="tokenInput" type="password" placeholder="MLY|… (vuoto = predefinita)" autocomplete="off" spellcheck="false">
+        </div>
+        <div id="googleBox" style="display:none">
+          <label for="googleKeyInput">Chiave API Google Maps</label>
+          <input id="googleKeyInput" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false">
+          <p class="hint">Crea una chiave nella <a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" rel="noopener noreferrer">Google Cloud Console</a> e abilita <b>Maps JavaScript API</b> (serve la fatturazione attiva; Google offre un credito mensile). Limitala per referrer HTTP al tuo sito. La chiave resta salvata solo nel tuo browser e i costi sono a tuo carico.</p>
+        </div>
+
+        <label>Tempo per round</label>
+        <div class="seg" id="timeSeg">
+          <button data-time="0" class="on">Libero</button>
+          <button data-time="300">5 min</button>
+          <button data-time="120">2 min</button>
+        </div>
+        <label>Movimento</label>
+        <div class="seg" id="ruleSeg">
+          <button data-rule="move" class="on">Si cammina</button>
+          <button data-rule="nomove">Fermo</button>
+        </div>
       </div>
-      <button id="startBtn" class="primary">Gioca</button>
-      <p class="hint" id="bestLine"></p>
-      <div class="row2">
-        <button id="boardBtn" class="ghost" disabled>🏆 Classifica</button>
-        <button id="duelBtn" class="ghost" disabled>⚔️ Sfida 1 contro 1</button>
-      </div>
-      <p class="hint" id="onlineHint"></p>
-      <p class="hint legal">
-        <a href="https://github.com/emmesaux/OpenMguesser/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
-        · <a href="https://github.com/emmesaux/OpenMguesser" target="_blank" rel="noopener noreferrer">Codice sorgente</a>
-      </p>
+    </details>
+
+    <div class="auth-row">
+      <button id="authBtn" class="mini wide" type="button" hidden>Accedi con Google</button>
+      <p class="hint" id="authHint"></p>
+    </div>
+
+    <footer class="legal">
+      <a href="https://github.com/emmesaux/OpenMguesser/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
+      <a href="https://github.com/emmesaux/OpenMguesser" target="_blank" rel="noopener noreferrer">Codice sorgente</a>
+    </footer>
+  </section>
+
+  <!-- Personalizza profilo -->
+  <section id="profileEdit" class="screen scroll">
+    <div class="sheet-card">
+      <h2>Il tuo profilo</h2>
+      <label for="nameInput">Nome (3-20 caratteri)</label>
+      <input id="nameInput" type="text" maxlength="20" autocomplete="off" spellcheck="false">
+      <label>Icona</label>
+      <div id="iconGrid" class="icon-grid"></div>
+      <p class="hint" id="editMsg"></p>
+      <button id="saveProfileBtn" class="primary">Salva</button>
+      <button id="cancelProfileBtn" class="ghost">Annulla</button>
     </div>
   </section>
 
   <!-- Classifica globale -->
   <section id="board" class="screen scroll">
-    <div class="card">
+    <div class="sheet-card">
       <h2>Classifica globale</h2>
       <p class="hint" id="boardMsg"></p>
       <ol id="boardList"></ol>
@@ -85,17 +135,17 @@
 
   <!-- Sfida 1 contro 1 -->
   <section id="lobby" class="screen scroll">
-    <div class="card center">
-      <h2>Sfida 1 contro 1</h2>
-      <p class="hint">Stessi 5 posti per entrambi: vince chi totalizza più punti. Fonte, tempo e regole sono quelli scelti nella home.</p>
+    <div class="sheet-card center">
+      <h2>Sfida un amico</h2>
+      <p class="hint">Stessi 5 posti per entrambi: vince chi totalizza più punti. Fonte, tempo e movimento sono quelli scelti nelle opzioni di gioco.</p>
       <div id="lobbyMenu">
         <button id="createRoomBtn" class="primary">Crea stanza</button>
-        <label for="joinCode">Oppure entra con un codice</label>
+        <label for="joinCode">Hai un codice?</label>
         <input id="joinCode" type="text" maxlength="5" placeholder="ABCDE" autocomplete="off" spellcheck="false" class="code-input">
         <button id="joinBtn" class="ghost">Entra</button>
       </div>
       <div id="lobbyWait" style="display:none">
-        <div class="big" id="roomCode"></div>
+        <div class="ticket" id="roomCode"></div>
         <p id="lobbyStatus"></p>
         <button id="copyLinkBtn" class="ghost">Copia link di invito</button>
       </div>
@@ -110,7 +160,9 @@
       <div id="viewer"></div>
       <div id="viewerMsg">Cerco un posto…</div>
       <div id="hud">
-        <span id="roundLbl"></span><span id="scoreLbl"></span><span id="timerLbl"></span>
+        <span class="hud-round"><span id="roundLbl"></span><span id="pips" class="pips" aria-hidden="true"></span></span>
+        <span id="scoreLbl"></span>
+        <span id="timerLbl"></span>
       </div>
     </div>
     <div id="guessPanel" class="small">
@@ -132,8 +184,8 @@
   </section>
 
   <!-- Fine -->
-  <section id="final" class="screen">
-    <div class="card center">
+  <section id="final" class="screen scroll">
+    <div class="sheet-card center">
       <h2>Partita finita</h2>
       <div class="big" id="finalScore"></div>
       <div id="duelBox" class="duel-box" style="display:none"></div>

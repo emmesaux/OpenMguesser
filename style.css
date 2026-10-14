@@ -1,119 +1,190 @@
-:root{--bg:#0f1420;--panel:#171e2e;--line:#27314a;--text:#e8ecf5;--mut:#8b96b0;--acc:#5eead4;--acc2:#a78bfa}
+/* OpenMguesser: identità "laguna". Carta da navigazione con linee di livello, pin corallo, inchiostro blu. */
+:root{
+  --paper:#EAF3F1; --card:#FFFFFF; --ink:#0D2B3E; --ink-2:#47636F; --line:#CDE0DB; --contour:#C3DBD5;
+  --pin:#D92E47; --on-pin:#FFFFFF; --sun:#FFC247; --lagoon:#127C82;
+  --shadow:0 12px 32px rgba(13,43,62,.16);
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --text:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r-chip:999px; --r-field:14px; --r-sheet:28px;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root{--paper:#08171F; --card:#0F2530; --ink:#E7F2EF; --ink-2:#9DB6BC; --line:#1E3B49; --contour:#10303C;
+        --pin:#FF5A72; --on-pin:#2A0610; --lagoon:#5CD0C8; --shadow:0 12px 32px rgba(0,0,0,.5)}
+}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
-#app{height:100%;position:relative}
-.screen{display:none;height:100%;width:100%}
+html,body{height:100%;height:100dvh;margin:0;overscroll-behavior:none;-webkit-text-size-adjust:100%;touch-action:manipulation;
+  background:var(--paper);color:var(--ink);font:400 16px/1.5 var(--text)}
+#app{height:100dvh;position:relative}
+a{color:var(--lagoon);text-underline-offset:3px}
+h1,h2{font-family:var(--display);margin:0;letter-spacing:-.025em;line-height:1.02}
+h2{font-size:28px;font-weight:700}
+:focus-visible{outline:3px solid var(--lagoon);outline-offset:2px}
+
+/* ---------- schermate ---------- */
+.screen{display:none;height:100%;width:100%;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 .screen.active{display:flex;flex-direction:column}
-h1{font-size:clamp(34px,8vw,56px);margin:0 0 8px;letter-spacing:-.02em}
-h1 span{color:var(--acc)}
-.hero{padding:48px 20px 20px;text-align:center;max-width:560px;margin:0 auto}
-.hero p{color:var(--mut)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin:12px auto;width:calc(100% - 32px);max-width:480px}
-.card.center{text-align:center}
-label{display:block;font-size:13px;color:var(--mut);margin:12px 0 6px;text-transform:uppercase;letter-spacing:.06em}
-.seg{display:flex;gap:6px}
-.seg button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer}
-.seg button.on{background:var(--acc);color:#04201c;border-color:var(--acc);font-weight:600}
-button.primary,button.ghost{width:100%;padding:14px;border-radius:12px;border:0;font-size:16px;font-weight:600;cursor:pointer;margin-top:16px}
-button.primary{background:var(--acc);color:#04201c}
+.screen.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(24px + env(safe-area-inset-bottom));
+  background:
+    repeating-radial-gradient(ellipse 62% 46% at 88% 6%,transparent 0 17px,var(--contour) 17px 18px),
+    repeating-radial-gradient(ellipse 52% 62% at 4% 96%,transparent 0 21px,var(--contour) 21px 22px),
+    var(--paper)}
+
+/* ---------- home ---------- */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:calc(16px + env(safe-area-inset-top)) 20px 0;width:100%;max-width:1040px;margin:0 auto}
+.brand{display:inline-flex;align-items:center;gap:10px;font:700 20px/1 var(--display);letter-spacing:-.02em}
+.profile{display:inline-flex;align-items:center;gap:6px;padding:4px 6px 4px 14px;border:1.5px solid var(--ink);border-radius:var(--r-chip);background:var(--card)}
+#pIcon{font-size:20px;line-height:1}
+#pName{font-weight:600;font-variant-numeric:tabular-nums}
+.mini{min-height:36px;min-width:36px;border:0;border-radius:var(--r-chip);background:var(--paper);color:var(--ink);cursor:pointer;font-size:15px}
+.mini.wide{padding:8px 16px;font-size:14px;font-weight:600;border:1.5px solid var(--ink);background:var(--card)}
+.mini[hidden]{display:none}
+
+.home-grid{display:grid;grid-template-columns:1fr;gap:8px;width:100%;max-width:1040px;margin:0 auto;padding:28px 20px 8px;align-items:center}
+.hero h1{font-size:clamp(56px,16vw,112px);font-weight:800}
+.lede{max-width:34ch;margin:16px 0 24px;font-size:18px;color:var(--ink-2)}
+.art{color:var(--ink);max-width:420px;width:100%;justify-self:end}
+.art-svg{width:100%;height:auto;display:block;overflow:visible}
+.dist-text{font:700 17px var(--display);fill:var(--ink);font-variant-numeric:tabular-nums}
+@media (min-width:860px){
+  .home-grid{grid-template-columns:1.1fr .9fr;gap:40px;padding-top:56px}
+}
+
+/* animazione unica all'apertura: il pin cade, la linea misura, compare la distanza */
+@media (prefers-reduced-motion:no-preference){
+  .pin{animation:drop .75s cubic-bezier(.2,.9,.3,1.25) .2s both}
+  .shadow{animation:fade .4s .5s both}
+  .arc{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .9s ease-out .95s forwards}
+  .target{animation:pop .35s cubic-bezier(.2,1.6,.4,1) 1.75s both;transform-box:fill-box;transform-origin:center}
+  .dist{animation:fade .4s 2.0s both}
+}
+@keyframes drop{from{transform:translateY(-130px);opacity:0}60%{opacity:1}to{transform:none;opacity:1}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ---------- controlli ---------- */
+label{display:block;font-size:14px;font-weight:600;color:var(--ink-2);margin:16px 0 6px}
+.hint{color:var(--ink-2);font-size:14px;margin:10px 0 0}
+input[type=password],input[type=text]{width:100%;padding:13px 14px;border-radius:var(--r-field);border:1.5px solid var(--line);
+  background:var(--card);color:var(--ink);font:500 16px var(--text)}
+input::placeholder{color:var(--ink-2);opacity:.7}
+button{font-family:var(--text)}
+button.primary,button.ghost{width:100%;min-height:52px;padding:14px 18px;border-radius:var(--r-chip);font-size:16px;font-weight:700;cursor:pointer;margin-top:12px}
+button.primary{border:0;background:var(--pin);color:var(--on-pin)}
+button.primary.big{min-height:60px;font-size:19px;font-family:var(--display);max-width:360px;box-shadow:0 6px 0 color-mix(in srgb,var(--pin) 55%,#000)}
+button.primary.big:active{transform:translateY(3px);box-shadow:0 3px 0 color-mix(in srgb,var(--pin) 55%,#000)}
 button.primary:disabled{opacity:.4;cursor:not-allowed}
-button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
-.hint{color:var(--mut);font-size:13px;margin:10px 0 0}
-#hud{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:8px;justify-content:space-between;pointer-events:none}
-#hud span{background:rgba(15,20,32,.8);padding:6px 12px;border-radius:999px;font-size:14px;font-variant-numeric:tabular-nums}
-#guessPanel{display:flex;flex-direction:column;background:var(--panel);padding:8px}
-#guessMap{flex:1;border-radius:12px}
-#guessPanel button{margin-top:8px}
-#resultMap{flex:1}
-.sheet{background:var(--panel);border-top:1px solid var(--line);padding:16px 20px 20px}
-.sheet h2{margin:0;font-size:22px}
-.sheet p{margin:6px 0 0;color:var(--mut)}
-.big{font-size:56px;font-weight:700;color:var(--acc);margin:8px 0}
-#finalList{list-style:none;padding:0;margin:12px 0;text-align:left}
-#finalList li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
-/* viewer panoramico */
+button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+button.ghost:disabled{opacity:.4;cursor:not-allowed}
+.sub-actions{display:flex;gap:10px;max-width:360px;margin-top:6px}
+.sub-actions .ghost{margin-top:12px;min-height:48px;font-size:15px}
+
+.seg{display:flex;gap:6px;padding:4px;border-radius:var(--r-chip);background:var(--card);border:1.5px solid var(--line)}
+.seg button{flex:1;min-height:44px;padding:8px 10px;border-radius:var(--r-chip);border:0;background:transparent;color:var(--ink);font-weight:600;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--paper)}
+
+.options{width:calc(100% - 40px);max-width:1040px;margin:20px auto 0;border-top:1.5px solid var(--line)}
+.options summary{cursor:pointer;padding:16px 0;font:700 18px var(--display);list-style:none;display:flex;align-items:center;justify-content:space-between}
+.options summary::-webkit-details-marker{display:none}
+.options summary::after{content:"";width:10px;height:10px;border-right:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:rotate(45deg);transition:transform .2s}
+.options[open] summary::after{transform:rotate(-135deg)}
+.options-body{max-width:520px;padding-bottom:12px}
+.auth-row{width:calc(100% - 40px);max-width:1040px;margin:8px auto 0}
+.legal{width:calc(100% - 40px);max-width:1040px;margin:28px auto 0;display:flex;gap:20px;font-size:14px}
+
+/* ---------- pannelli (profilo, classifica, sfida, fine) ---------- */
+.sheet-card{width:calc(100% - 32px);max-width:520px;margin:calc(24px + env(safe-area-inset-top)) auto 0;padding:24px 20px;
+  background:var(--card);border:1.5px solid var(--ink);border-radius:var(--r-sheet);box-shadow:6px 6px 0 var(--ink)}
+.sheet-card.center{text-align:center}
+.icon-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:6px}
+.icon-opt{min-height:48px;border-radius:var(--r-field);border:1.5px solid var(--line);background:var(--paper);font-size:24px;cursor:pointer;line-height:1}
+.icon-opt.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset;background:var(--card)}
+.code-input{text-transform:uppercase;text-align:center;letter-spacing:.3em;font:700 22px var(--display)}
+.ticket{margin:14px auto 6px;padding:10px 18px;display:inline-block;border:2px dashed var(--ink);border-radius:var(--r-field);
+  font:800 44px/1 var(--display);letter-spacing:.14em;text-indent:.14em}
+
+#boardList{margin:12px 0 0;padding:0;list-style:none;counter-reset:pos;text-align:left}
+#boardList li{counter-increment:pos;display:flex;align-items:center;gap:12px;padding:10px 6px;border-bottom:1px solid var(--line);font-weight:600}
+#boardList li::before{content:counter(pos);width:30px;flex:none;font:800 18px var(--display);color:var(--ink-2);font-variant-numeric:tabular-nums}
+#boardList li:nth-child(-n+3)::before{color:var(--pin)}
+#boardList li span:first-of-type{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#boardList li span:last-of-type{font:700 18px var(--display);font-variant-numeric:tabular-nums}
+#boardList li.me{background:color-mix(in srgb,var(--sun) 35%,transparent);border-radius:12px}
+
+/* ---------- gioco ---------- */
+#game.active{position:relative;flex-direction:column}
 #viewerWrap{position:relative;flex:1;min-height:0;background:#000}
 #viewer{position:absolute;inset:0}
-#viewerMsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);text-align:center;padding:20px;background:#000;z-index:2}
-#hud{z-index:3}
-input[type=password],input[type=text]{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:15px}
-a{color:var(--acc)}
-/* mappa di risposta flottante */
-#guessPanel{position:absolute;right:12px;bottom:12px;z-index:5;width:min(520px,calc(100% - 24px));height:min(60%,460px);border:1px solid var(--line);border-radius:14px;opacity:1;transition:width .2s,height .2s,opacity .2s}
-#guessPanel.small{width:220px;height:170px;opacity:.8}
+#viewerMsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#cfe3e0;text-align:center;padding:20px;background:#08171F;z-index:2;font-weight:600}
+#hud{position:absolute;z-index:3;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;display:flex;gap:8px;justify-content:space-between;align-items:flex-start;pointer-events:none}
+#hud>span{background:rgba(8,23,31,.82);color:#fff;padding:8px 14px;border-radius:var(--r-chip);font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;backdrop-filter:blur(6px)}
+#hud>span:empty{display:none}
+.hud-round{display:inline-flex;align-items:center;gap:10px}
+.pips{display:inline-flex;gap:5px}
+.pips i{width:9px;height:9px;border-radius:50%;border:2px solid rgba(255,255,255,.55);display:block}
+.pips i.done{background:var(--sun);border-color:var(--sun)}
+.pips i.now{background:#fff;border-color:#fff}
+
+#guessPanel{position:absolute;right:12px;bottom:12px;z-index:5;width:min(540px,calc(100% - 24px));height:min(60%,460px);display:flex;flex-direction:column;
+  background:var(--card);padding:8px;border:2px solid var(--ink);border-radius:22px;box-shadow:var(--shadow);transition:width .2s,height .2s,opacity .2s}
+#guessPanel.small{width:220px;height:170px;opacity:.9}
 #guessPanel.small #guessBtn{display:none}
-#game.active{position:relative;flex-direction:column}
+#guessMap{flex:1;border-radius:14px;overflow:hidden}
+#guessPanel button.primary{margin-top:8px;min-height:48px}
+.map-toggle{display:none;align-self:flex-end;margin:0 0 6px;padding:8px 14px;border-radius:var(--r-chip);border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font-weight:700;cursor:pointer}
+#guessPanel .map-toggle{display:inline-block}
+
+/* mappa di risposta su dispositivi touch */
+#guessPanel.touch.small{width:auto;height:auto;opacity:1;padding:0;background:transparent;border:0;box-shadow:none;
+  right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom))}
+#guessPanel.touch.small #guessMap,#guessPanel.touch.small #guessBtn{display:none}
+#guessPanel.touch.small .map-toggle{margin:0;padding:14px 22px;background:var(--pin);color:var(--on-pin);border:0;box-shadow:var(--shadow);font:700 17px var(--display)}
+#guessPanel.touch:not(.small){left:8px;right:8px;width:auto;bottom:calc(8px + env(safe-area-inset-bottom));height:min(62%,520px)}
 
 /* viewer Panoramax */
 .pmx-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
 .pmx-nav{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:10px;z-index:4}
-.pmx-nav button{padding:12px 18px;border-radius:999px;border:0;background:rgba(15,20,32,.85);color:var(--text);font-size:15px;font-weight:600;cursor:pointer}
+.pmx-nav button{padding:12px 18px;border-radius:var(--r-chip);border:0;background:rgba(8,23,31,.88);color:#fff;font-size:15px;font-weight:700;cursor:pointer}
 .pmx-nav button:disabled{opacity:.35;cursor:not-allowed}
 
-/* ===== Mobile e tablet ===== */
-html,body{height:100%;height:100dvh;overscroll-behavior:none;-webkit-text-size-adjust:100%;touch-action:manipulation}
-#app{height:100dvh}
-.screen{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
-#home{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+/* ---------- risultato ---------- */
+#resultMap{flex:1}
+.sheet{background:var(--card);border-top:2px solid var(--ink);border-radius:var(--r-sheet) var(--r-sheet) 0 0;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(13,43,62,.12)}
+#resTitle{font-size:clamp(40px,11vw,60px);font-weight:800;color:var(--pin);font-variant-numeric:tabular-nums}
+#resDetail{margin:4px 0 0;font:600 20px var(--display);color:var(--ink)}
+#oppLine{margin:6px 0 0;color:var(--lagoon);font-weight:700;min-height:1.4em}
+.sheet button.primary{max-width:420px}
+
+/* ---------- fine partita ---------- */
+.big{font:800 clamp(64px,20vw,104px)/1 var(--display);color:var(--pin);margin:8px 0;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.duel-box{display:flex;flex-direction:column;gap:4px;margin:8px 0 4px;padding:14px;border:1.5px dashed var(--ink);border-radius:var(--r-field);font-weight:600}
+#finalList{list-style:none;padding:0;margin:14px 0;text-align:left}
+#finalList li{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center}
+#finalList .rn{font:800 15px var(--display);color:var(--ink-2)}
+#finalList .rv{grid-column:2;font-weight:600;font-variant-numeric:tabular-nums}
+#finalList .bar{grid-column:2;height:8px;border-radius:var(--r-chip);background:var(--line);overflow:hidden}
+#finalList .bar i{display:block;height:100%;background:var(--pin);border-radius:var(--r-chip)}
+
+/* ---------- Leaflet ---------- */
+.leaflet-container{font-family:var(--text)}
+
+/* ---------- telefono e tablet ---------- */
 button,.seg button{min-height:44px}
-input[type=password],input[type=text]{font-size:16px} /* evita lo zoom automatico su iOS */
-#hud{top:calc(10px + env(safe-area-inset-top));flex-wrap:wrap}
-.sheet{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
-
-/* Pulsante apri/chiudi mappa */
-.map-toggle{display:none;align-self:flex-end;margin:0 0 6px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-weight:600;cursor:pointer}
-#guessPanel .map-toggle{display:inline-block}
-
-/* Touch: pannello compatto = solo pulsante; aperto = pannello a basso quasi a tutta larghezza */
-#guessPanel.touch.small{width:auto;height:auto;opacity:1;padding:0;background:transparent;border:0;right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom))}
-#guessPanel.touch.small #guessMap,#guessPanel.touch.small #guessBtn{display:none}
-#guessPanel.touch.small .map-toggle{margin:0;padding:14px 20px;background:var(--acc);color:#04201c;border:0;box-shadow:0 4px 16px rgba(0,0,0,.45);font-size:16px}
-#guessPanel.touch:not(.small){left:8px;right:8px;width:auto;bottom:calc(8px + env(safe-area-inset-bottom));height:min(62%,520px)}
-
-/* Telefono in orizzontale: poco spazio verticale */
 @media (max-height:480px) and (orientation:landscape){
-  .hero{padding:16px 20px 4px}
-  h1{font-size:30px}
+  .home-grid{padding-top:12px}
+  .hero h1{font-size:44px}
+  .lede{margin:8px 0 12px}
   #guessPanel.touch:not(.small){left:auto;width:min(60%,520px);height:calc(100% - 16px);bottom:8px}
 }
-/* Telefono stretto */
 @media (max-width:420px){
-  .card{width:calc(100% - 24px);padding:16px}
-  .seg button{padding:10px 6px;font-size:14px}
+  .icon-grid{grid-template-columns:repeat(4,1fr)}
   .pmx-nav{width:calc(100% - 24px)}
   .pmx-nav button{flex:1;padding:14px 10px}
-  .big{font-size:44px}
 }
-/* Tablet */
 @media (min-width:700px) and (max-width:1100px){
-  .hero{padding-top:64px}
-  .card{max-width:560px}
   #guessPanel.touch:not(.small){left:auto;right:16px;width:min(560px,55%);height:min(60%,560px)}
   #guessPanel.small:not(.touch){width:260px;height:200px}
 }
-#hud span:empty{display:none}
-
-/* ===== Online: profilo, classifica, sfide ===== */
-.screen.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
-.profile{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:6px 8px 6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
-#pIcon{font-size:22px;line-height:1}
-#pName{font-weight:600;font-variant-numeric:tabular-nums}
-.mini{min-height:36px;min-width:36px;border:0;border-radius:999px;background:var(--bg);color:var(--text);cursor:pointer;font-size:16px}
-.row2{display:flex;gap:8px}
-.row2 .ghost{margin-top:12px}
-.row2 .ghost:disabled{opacity:.45;cursor:not-allowed}
-.code-input{text-transform:uppercase;text-align:center;letter-spacing:.3em;font-size:20px}
-#boardList{margin:12px 0 0;padding:0;list-style:none;counter-reset:pos}
-#boardList li{counter-increment:pos;display:flex;justify-content:space-between;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
-#boardList li::before{content:counter(pos);color:var(--mut);width:28px;flex:none}
-#boardList li span:first-of-type{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#boardList li.me{background:rgba(94,234,212,.1);border-radius:8px}
-#oppLine{color:#fb923c;min-height:1.4em}
-.duel-box{display:flex;flex-direction:column;gap:4px;margin:8px 0 4px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
-
-/* Accesso Google */
-.auth-row{margin-top:8px}
-.mini.wide{padding:8px 16px;font-size:14px;font-weight:600;border:1px solid var(--line)}
-.mini[hidden]{display:none}
-#authHint{margin-top:6px}
-.legal{text-align:center;margin-top:14px}

@@ -37,6 +37,38 @@
   }
   $("pReroll").addEventListener("click", () => { O().rerollProfile(); renderProfile(); });
 
+  // ---------- personalizzazione profilo ----------
+  let pickedIcon = null;
+  function buildIconGrid() {
+    $("iconGrid").replaceChildren(...O().icons.map((ic) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = ic;
+      b.className = "icon-opt" + (ic === pickedIcon ? " on" : "");
+      b.setAttribute("aria-label", "Icona " + ic);
+      b.addEventListener("click", () => { pickedIcon = ic; buildIconGrid(); });
+      return b;
+    }));
+  }
+  $("pEdit").addEventListener("click", () => {
+    const p = O().profile;
+    $("nameInput").value = p.name;
+    pickedIcon = p.icon;
+    buildIconGrid();
+    setText("editMsg", "");
+    show("profileEdit");
+  });
+  $("saveProfileBtn").addEventListener("click", () => {
+    try {
+      O().setProfile({ name: $("nameInput").value, icon: pickedIcon });
+      renderProfile();
+      show("home");
+    } catch (e) {
+      setText("editMsg", e.message);
+    }
+  });
+  $("cancelProfileBtn").addEventListener("click", () => show("home"));
+
   // ---------- ospite / accesso con Google ----------
   function renderAuth() {
     const btn = $("authBtn");
@@ -177,7 +209,7 @@
     if (!g) { oppLine.textContent = `${d.opp.icon} ${d.opp.name} sta ancora giocando…`; return; }
     oppLine.textContent = `${d.opp.icon} ${d.opp.name}: ${g.km == null ? "nessuna risposta" : fmtKm(g.km)} · ${g.pts.toLocaleString("it-IT")} pt`;
     if (g.lat != null && resultMap && !oppMarker) {
-      oppMarker = L.circleMarker([g.lat, g.lng], { radius: 8, color: "#fb923c", fillOpacity: 0.9 }).addTo(resultMap);
+      oppMarker = L.circleMarker([g.lat, g.lng], { radius: 9, color: "#0D2B3E", weight: 3, fillColor: "#5CD0C8", fillOpacity: 1 }).addTo(resultMap);
     }
   }
   window.onRoundResult = function () {

@@ -27,6 +27,17 @@ function loadProfile() {
 
 const O = (window.OMG_ONLINE = {
   ready: false, enabled: false, uid: null, anonymous: true, profile: loadProfile(),
+  icons: ICONS,
+  // Profilo personalizzato: nome 3-20 caratteri (lettere, numeri, spazio, _ e -) e icona dalla lista.
+  setProfile({ name, icon }) {
+    const n = String(name || "").trim().replace(/\s+/g, " ");
+    if (!/^[A-Za-z0-9_ -]{3,20}$/.test(n)) throw new Error("Il nome deve avere 3-20 caratteri: lettere, numeri, spazio, _ o -.");
+    if (!ICONS.includes(icon)) throw new Error("Scegli un'icona dalla lista.");
+    O.profile = { name: n, icon };
+    saveLocal(O.profile);
+    if (O.enabled) O._syncProfile().catch(() => {});
+    return O.profile;
+  },
   rerollProfile() {
     O.profile = newProfile();
     saveLocal(O.profile);

@@ -321,6 +321,7 @@ async function startRound() {
   setPanelOpen(false);
   setTimeout(() => guessMap.invalidateSize(), 60);
   $("roundLbl").textContent = `Round ${state.round + 1}/${ROUNDS}`;
+  renderPips();
   $("scoreLbl").textContent = `${state.total.toLocaleString("it-IT")} pt`;
   $("timerLbl").textContent = "";
   const msg = $("viewerMsg");
@@ -385,20 +386,41 @@ function showResult(target, km, pts, timeout) {
   $("resTitle").textContent = `+${pts.toLocaleString("it-IT")} punti`;
   $("resDetail").textContent = km === null
     ? (timeout ? "Tempo scaduto, nessuna risposta." : "Nessuna risposta.")
-    : `Distanza: ${fmtKm(km)}`;
+    : `${fmtKm(km)} dal posto reale`;
   $("nextBtn").textContent = state.round + 1 >= ROUNDS ? "Vedi il risultato" : "Avanti";
   if (resultMap) resultMap.remove();
   resultMap = L.map("resultMap", { worldCopyJump: true }).setView(target, 3);
   tiles().addTo(resultMap);
-  L.circleMarker(target, { radius: 9, color: "#5eead4", fillOpacity: 0.9 }).addTo(resultMap);
+  L.circleMarker(target, { radius: 10, color: "#0D2B3E", weight: 3, fillColor: "#FFC247", fillOpacity: 1 }).addTo(resultMap);
   const pts2 = [target];
   if (state.guess) {
     L.marker(state.guess).addTo(resultMap);
-    L.polyline([state.guess, target], { color: "#a78bfa", dashArray: "6 8" }).addTo(resultMap);
+    L.polyline([state.guess, target], { color: "#D92E47", weight: 3, dashArray: "6 9" }).addTo(resultMap);
     pts2.push(state.guess);
   }
   setTimeout(() => { resultMap.invalidateSize(); resultMap.fitBounds(L.latLngBounds(pts2).pad(0.4), { maxZoom: 12 }); }, 60);
   if (typeof onRoundResult === "function") onRoundResult(target);
+}
+
+// Indicatori dei round: pieni quelli già giocati, evidenziato il corrente.
+function renderPips() {
+  $("pips").replaceChildren(...Array.from({ length: ROUNDS }, (_, i) => {
+    const s = document.createElement("i");
+    s.className = i < state.round ? "done" : i === state.round ? "now" : "";
+    return s;
+  }));
+}
+
+// Il totale sale fino al valore finale; senza animazione se l'utente la disattiva.
+function countUp(el, to) {
+  if (!to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to.toLocaleString("it-IT"); return; }
+  const t0 = performance.now(), D = 900;
+  const step = (t) => {
+    const k = Math.min(1, (t - t0) / D);
+    el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString("it-IT");
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }
 
 function nextRound() {
@@ -409,12 +431,18 @@ function nextRound() {
 
 function finish() {
   show("final");
-  $("finalScore").textContent = state.total.toLocaleString("it-IT");
+  countUp($("finalScore"), state.total);
+  // Ogni riga mostra una barra proporzionale ai punti del round (sul massimo possibile).
   $("finalList").replaceChildren(...state.results.map((r, i) => {
-    const li = document.createElement("li"), a = document.createElement("span"), b = document.createElement("span");
-    a.textContent = `Round ${i + 1}`;
-    b.textContent = `${r.km === null ? "—" : fmtKm(r.km)} · ${r.pts.toLocaleString("it-IT")} pt`;
-    li.append(a, b);
+    const li = document.createElement("li"), rn = document.createElement("span"), rv = document.createElement("span");
+    const bar = document.createElement("span"), fill = document.createElement("i");
+    rn.className = "rn"; rn.textContent = `Round ${i + 1}`;
+    rv.className = "rv";
+    rv.textContent = `${r.km === null ? "nessuna risposta" : fmtKm(r.km)}, ${r.pts.toLocaleString("it-IT")} punti`;
+    bar.className = "bar";
+    fill.style.width = `${Math.round((r.pts / MAX_SCORE) * 100)}%`;
+    bar.append(fill);
+    li.append(rn, rv, bar);
     return li;
   }));
   try {

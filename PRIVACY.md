@@ -25,12 +25,12 @@ Solo se la parte online è attiva:
 | Dato | Contenuto | Conservazione |
 |---|---|---|
 | Identificativo utente | ID anonimo generato da Firebase (non è il tuo nome né la tua email) | finché l'account esiste |
-| Profilo | nome casuale e icona | ospiti: 14 giorni; con Google: fino a cancellazione |
+| Profilo | nome (casuale o scelto da te, non inserire dati personali) e icona | ospiti: 14 giorni; con Google: fino a cancellazione |
 | Punteggi | punteggio totale, fonte immagini, data | ospiti: 14 giorni; con Google: fino a cancellazione |
 | Sfide 1 contro 1 | codice stanza, nomi/icone dei due giocatori, luoghi della partita, risposte (coordinate e punti) | 1 giorno |
 
 ### Accesso con Google (facoltativo)
-Se scegli "Accedi con Google", Firebase Authentication riceve dal tuo account Google dati come email e nome. Questi dati **restano nel registro utenti del progetto Firebase**: non vengono mostrati agli altri giocatori né copiati nel database dei punteggi. Agli altri giocatori viene mostrato solo il nome casuale e l'icona.
+Se scegli "Accedi con Google", Firebase Authentication riceve dal tuo account Google dati come email e nome. Questi dati **restano nel registro utenti del progetto Firebase**: non vengono mostrati agli altri giocatori né copiati nel database dei punteggi. Agli altri giocatori viene mostrato solo il nome e l'icona del profilo (casuali o scelti da te); la foto del tuo account Google non viene usata.
 
 ## Servizi di terze parti
 Per funzionare, il gioco usa servizi esterni. Quando li usi, questi servizi ricevono almeno il tuo indirizzo IP e i dati tecnici della richiesta, secondo le loro informative:
@@ -40,6 +40,7 @@ Per funzionare, il gioco usa servizi esterni. Quando li usi, questi servizi rice
 - **Panoramax** (immagini stradali aperte): <https://panoramax.fr>
 - **Google Maps / Street View**, solo se scegli la fonte Google con la tua chiave: <https://policies.google.com/privacy>
 - **OpenStreetMap** (mappa): <https://osmfoundation.org/wiki/Privacy_Policy>
+- **Google Fonts** (caratteri Bricolage Grotesque e Figtree, caricati da fonts.googleapis.com e fonts.gstatic.com): <https://developers.google.com/fonts/faq/privacy>
 - **jsDelivr, cdnjs, gstatic** (librerie e confini delle terre emerse caricati da CDN)
 - **GitHub Pages** (hosting del sito): <https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement>
 
