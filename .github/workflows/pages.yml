@@ -27,12 +27,14 @@ jobs:
         env:
           MAPILLARY_TOKEN: ${{ secrets.MAPILLARY_TOKEN }}
           GOOGLE_MAPS_KEY: ${{ secrets.GOOGLE_MAPS_KEY }}
+          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
         run: |
           mkdir _site
-          cp index.html app.js style.css favicon.svg _site/
-          printf 'window.OMG_CONFIG = { mapillaryToken: %s, googleKey: %s };\n' \
-            "$(jq -Rn --arg v "$MAPILLARY_TOKEN" '$v')" \
-            "$(jq -Rn --arg v "$GOOGLE_MAPS_KEY" '$v')" > _site/config.js
+          cp index.html app.js duel.js online.js style.css favicon.svg _site/
+          # FIREBASE_CONFIG è il JSON di configurazione web di Firebase (opzionale).
+          jq -n --arg m "$MAPILLARY_TOKEN" --arg g "$GOOGLE_MAPS_KEY" --arg f "$FIREBASE_CONFIG" \
+            '{mapillaryToken: $m, googleKey: $g, firebase: (try ($f | fromjson) catch null)}' \
+            | { printf 'window.OMG_CONFIG = '; cat; printf ';\n'; } > _site/config.js
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

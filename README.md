@@ -69,6 +69,36 @@ Con i Secrets il workflow `.github/workflows/pages.yml` genera `config.js` al mo
 
 Nella vista Google vengono nascosti indirizzo e nomi delle strade, per non rivelare il posto.
 
+## Online: classifica globale e sfide 1 contro 1
+
+Funziona su **Firebase (piano Spark, gratuito, senza carta)**. Senza configurazione il gioco resta offline e i pulsanti online sono disattivati.
+
+**Cosa c'è**
+- Si gioca **subito, senza registrarsi**: ogni giocatore riceve un nome alfanumerico casuale (es. `Guest-K7Q2M9`) e un'icona casuale, rigenerabili col dado 🎲, tramite l'accesso anonimo di Firebase.
+- **Ospiti:** i loro punteggi compaiono in classifica ma profilo e punteggi vengono cancellati dopo **14 giorni** (policy TTL di Firestore).
+- **Accesso con Google (facoltativo):** conserva profilo e punteggi senza scadenza. Si mostra sempre il nome casuale, mai quello dell'account Google.
+- **Classifica globale:** a fine partita il punteggio viene inviato; si vede il miglior risultato per giocatore.
+- **Sfida 1 contro 1:** un giocatore crea la stanza (5 posti scelti all'inizio), l'altro entra col codice di 5 caratteri o con il link `?room=CODICE`. Stessi posti per entrambi, vince chi totalizza più punti; vedi la risposta dell'avversario a ogni round.
+
+**Attivazione (una volta)**
+1. Su <https://console.firebase.google.com> crea un progetto (puoi disattivare Analytics).
+2. **Build → Authentication → Sign-in method**: abilita **Anonymous** e **Google** (per Google scegli l'email di supporto del progetto).
+3. **Build → Firestore Database → Crea database** (modalità produzione, regione a scelta).
+4. In **Firestore → Regole** incolla il contenuto di [`firestore.rules`](firestore.rules) e pubblica.
+   Poi in **Firestore → Dati → Time-to-live (TTL)** crea una policy sul campo `expiresAt` per i gruppi di raccolte `scores`, `players`, `rooms` e `guesses`: così i dati degli ospiti vengono cancellati davvero dopo 14 giorni (quelli scaduti sono comunque nascosti dalla classifica anche prima della cancellazione).
+5. **Impostazioni progetto → Le tue app → Web (`</>`)**: registra l'app e copia l'oggetto `firebaseConfig`.
+6. Usalo così:
+   - **In locale:** in `config.local.js` aggiungi `firebase: { apiKey: "…", authDomain: "…", projectId: "…", appId: "…" }` dentro `OMG_CONFIG`.
+   - **Online:** crea il Secret `FIREBASE_CONFIG` con lo stesso oggetto in formato **JSON** (`{"apiKey":"…","authDomain":"…","projectId":"…","appId":"…"}`).
+7. In **Authentication → Impostazioni → Domini autorizzati** aggiungi il dominio del sito (es. `emmesaux.github.io`).
+
+La configurazione web di Firebase è pensata per essere pubblica: la sicurezza sta nelle regole di Firestore, non nel nascondere la chiave.
+
+**Limiti onesti**
+- I punteggi sono calcolati dal client: un utente determinato può inviare valori falsi (le regole li limitano a 0–25.000 ma non possono verificarli). Va bene per un gioco tra amici; una classifica a prova di imbroglio richiede un server che rigiochi i round.
+- In una sfida i posti sono salvati nella stanza: chi sa leggere il database potrebbe vedere le coordinate prima di rispondere.
+- Piano gratuito Firebase: 50.000 letture e 20.000 scritture al giorno, più che sufficienti per uso personale.
+
 ## Come funziona
 
 1. Si estrae un punto casuale uniforme sulla sfera e si scarta se cade in mare o in Antartide (confini Natural Earth 110m, testati con il punto-in-poligono).
@@ -83,6 +113,10 @@ index.html   struttura delle schermate (home, gioco, risultato, fine)
 style.css    tema scuro, layout responsive, regole per touch/mobile
 app.js       logica: ricerca posti, viewer, mappe, punteggio
 favicon.svg  icona
+duel.js      interfaccia online: profilo, classifica, sfide
+online.js    client Firebase (accesso anonimo, Firestore)
+firestore.rules  regole di sicurezza del database
+config.js    configurazione pubblica (senza chiavi; generata dai Secrets in produzione)
 ```
 
 Librerie caricate da CDN con controllo di integrità (SRI): Leaflet 1.9.4 e MapillaryJS 4.1.2. Google Maps JS si carica solo se scegli la fonte Google.

@@ -17,7 +17,7 @@ const DEFAULT_GOOGLE_KEY = CFG.googleKey || "";
 
 const $ = (id) => document.getElementById(id);
 const PMX = "https://api.panoramax.xyz/api";
-const state = { provider: "mapillary", prefetch: null, time: 0, rule: "move", round: 0, total: 0, results: [], current: null, guess: null, timer: null, locked: false };
+const state = { provider: "mapillary", prefetch: null, duel: null, time: 0, rule: "move", round: 0, total: 0, results: [], current: null, guess: null, timer: null, locked: false };
 let guessMap, guessMarker, resultMap, viewer, landPolys = null;
 
 // ---------- utilità ----------
@@ -328,11 +328,17 @@ async function startRound() {
   msg.textContent = "Cerco un posto…";
   try {
     // Il posto del round è già pronto se è stato cercato mentre giocavi il precedente.
-    const ready = state.prefetch;
-    state.prefetch = null;
-    state.current = ready
-      ? await ready
-      : await findSpot((n) => { msg.textContent = n ? `Cerco un posto… (tentativo ${n + 1})` : "Cerco un posto…"; });
+    if (state.duel) {
+      // Sfida 1 contro 1: i posti sono quelli scelti dall'ospitante, uguali per entrambi.
+      state.current = state.duel.spots[state.round];
+      if (state.current.provider === "google") await loadGoogle(getGoogleKey());
+    } else {
+      const ready = state.prefetch;
+      state.prefetch = null;
+      state.current = ready
+        ? await ready
+        : await findSpot((n) => { msg.textContent = n ? `Cerco un posto… (tentativo ${n + 1})` : "Cerco un posto…"; });
+    }
   } catch (e) {
     msg.textContent = e.message;
     if (e.fatal) setTimeout(() => show("home"), 2500);
@@ -342,7 +348,7 @@ async function startRound() {
   msg.style.display = "none";
   startTimer();
   // Prepara il round successivo in background mentre si gioca questo.
-  if (state.round + 1 < ROUNDS) {
+  if (!state.duel && state.round + 1 < ROUNDS) {
     state.prefetch = findSpot(() => {});
     state.prefetch.catch(() => { state.prefetch = null; });
   }
@@ -369,6 +375,7 @@ function submitGuess(timeout) {
   const pts = km === null ? 0 : scoreFor(km);
   state.total += pts;
   state.results.push({ km, pts });
+  if (typeof onGuessSubmitted === "function") onGuessSubmitted(km, pts);
   showResult(target, km, pts, timeout);
 }
 
@@ -391,6 +398,7 @@ function showResult(target, km, pts, timeout) {
     pts2.push(state.guess);
   }
   setTimeout(() => { resultMap.invalidateSize(); resultMap.fitBounds(L.latLngBounds(pts2).pad(0.4), { maxZoom: 12 }); }, 60);
+  if (typeof onRoundResult === "function") onRoundResult(target);
 }
 
 function nextRound() {
@@ -412,10 +420,12 @@ function finish() {
   try {
     if (state.total > Number(localStorage.getItem(BEST_KEY) || 0)) localStorage.setItem(BEST_KEY, String(state.total));
   } catch (e) { /* storage non disponibile */ }
+  if (typeof onGameFinished === "function") onGameFinished();
 }
 
 function begin() {
   state.prefetch = null;
+  state.duel = null;
   if (state.provider === "mapillary") {
     // Campo opzionale se il sito ha già una chiave predefinita (da config), altrimenti obbligatorio.
     const token = $("tokenInput").value.trim() || DEFAULT_MLY_TOKEN;

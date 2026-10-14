@@ -20,6 +20,15 @@
     <div class="hero">
       <h1>Open<span>M</span>guesser</h1>
       <p>Sei dentro una mappa a 360°. Muoviti, cerca indizi, poi indovina dove sei. Gratis, senza account.</p>
+      <div id="profile" class="profile">
+        <span id="pIcon" aria-hidden="true"></span>
+        <span id="pName"></span>
+        <button id="pReroll" class="mini" type="button" title="Cambia nome e icona" aria-label="Cambia nome e icona">🎲</button>
+      </div>
+      <div class="auth-row">
+        <button id="authBtn" class="mini wide" type="button" hidden>Accedi con Google</button>
+      </div>
+      <p class="hint" id="authHint"></p>
     </div>
     <div class="card">
       <label>Fonte immagini</label>
@@ -52,6 +61,42 @@
       </div>
       <button id="startBtn" class="primary">Gioca</button>
       <p class="hint" id="bestLine"></p>
+      <div class="row2">
+        <button id="boardBtn" class="ghost" disabled>🏆 Classifica</button>
+        <button id="duelBtn" class="ghost" disabled>⚔️ Sfida 1 contro 1</button>
+      </div>
+      <p class="hint" id="onlineHint"></p>
+    </div>
+  </section>
+
+  <!-- Classifica globale -->
+  <section id="board" class="screen scroll">
+    <div class="card">
+      <h2>Classifica globale</h2>
+      <p class="hint" id="boardMsg"></p>
+      <ol id="boardList"></ol>
+      <button id="boardBack" class="ghost">Indietro</button>
+    </div>
+  </section>
+
+  <!-- Sfida 1 contro 1 -->
+  <section id="lobby" class="screen scroll">
+    <div class="card center">
+      <h2>Sfida 1 contro 1</h2>
+      <p class="hint">Stessi 5 posti per entrambi: vince chi totalizza più punti. Fonte, tempo e regole sono quelli scelti nella home.</p>
+      <div id="lobbyMenu">
+        <button id="createRoomBtn" class="primary">Crea stanza</button>
+        <label for="joinCode">Oppure entra con un codice</label>
+        <input id="joinCode" type="text" maxlength="5" placeholder="ABCDE" autocomplete="off" spellcheck="false" class="code-input">
+        <button id="joinBtn" class="ghost">Entra</button>
+      </div>
+      <div id="lobbyWait" style="display:none">
+        <div class="big" id="roomCode"></div>
+        <p id="lobbyStatus"></p>
+        <button id="copyLinkBtn" class="ghost">Copia link di invito</button>
+      </div>
+      <p class="hint" id="lobbyMsg"></p>
+      <button id="lobbyBack" class="ghost">Indietro</button>
     </div>
   </section>
 
@@ -77,6 +122,7 @@
     <div class="sheet">
       <h2 id="resTitle"></h2>
       <p id="resDetail"></p>
+      <p id="oppLine"></p>
       <button id="nextBtn" class="primary">Avanti</button>
     </div>
   </section>
@@ -86,6 +132,7 @@
     <div class="card center">
       <h2>Partita finita</h2>
       <div class="big" id="finalScore"></div>
+      <div id="duelBox" class="duel-box" style="display:none"></div>
       <ul id="finalList"></ul>
       <button id="shareBtn" class="ghost">Copia risultato</button>
       <button id="againBtn" class="primary">Gioca ancora</button>
@@ -97,5 +144,7 @@
 <script src="config.js"></script>
 <script src="config.local.js" onerror="void 0"></script>
 <script src="app.js"></script>
+<script src="duel.js"></script>
+<script type="module" src="online.js"></script>
 </body>
 </html>

@@ -92,3 +92,27 @@ input[type=password],input[type=text]{font-size:16px} /* evita lo zoom automatic
   #guessPanel.small:not(.touch){width:260px;height:200px}
 }
 #hud span:empty{display:none}
+
+/* ===== Online: profilo, classifica, sfide ===== */
+.screen.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.profile{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:6px 8px 6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
+#pIcon{font-size:22px;line-height:1}
+#pName{font-weight:600;font-variant-numeric:tabular-nums}
+.mini{min-height:36px;min-width:36px;border:0;border-radius:999px;background:var(--bg);color:var(--text);cursor:pointer;font-size:16px}
+.row2{display:flex;gap:8px}
+.row2 .ghost{margin-top:12px}
+.row2 .ghost:disabled{opacity:.45;cursor:not-allowed}
+.code-input{text-transform:uppercase;text-align:center;letter-spacing:.3em;font-size:20px}
+#boardList{margin:12px 0 0;padding:0;list-style:none;counter-reset:pos}
+#boardList li{counter-increment:pos;display:flex;justify-content:space-between;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
+#boardList li::before{content:counter(pos);color:var(--mut);width:28px;flex:none}
+#boardList li span:first-of-type{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#boardList li.me{background:rgba(94,234,212,.1);border-radius:8px}
+#oppLine{color:#fb923c;min-height:1.4em}
+.duel-box{display:flex;flex-direction:column;gap:4px;margin:8px 0 4px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+
+/* Accesso Google */
+.auth-row{margin-top:8px}
+.mini.wide{padding:8px 16px;font-size:14px;font-weight:600;border:1px solid var(--line)}
+.mini[hidden]{display:none}
+#authHint{margin-top:6px}
