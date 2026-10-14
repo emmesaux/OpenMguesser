@@ -347,7 +347,7 @@
     const ok = online();
     $("boardBtn").disabled = !ok;
     $("duelBtn").disabled = !ok;
-    hint(ok ? "" : "on.off");
+    hint(ok ? "" : (O() && O().error ? "on.failed" : "on.off"));
     const room = new URLSearchParams(location.search).get("room");
     if (ok && room) openLobby(room.toUpperCase().slice(0, 5));
   });

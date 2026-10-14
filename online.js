@@ -208,5 +208,8 @@ async function init() {
 }
 
 init()
-  .catch((e) => { console.warn("Online non disponibile:", e && e.message); })
+  .catch((e) => {
+    O.error = (e && e.message) || "error"; // configurato ma non raggiungibile: il messaggio lo distingue da "non configurato"
+    console.warn("Online non disponibile:", O.error);
+  })
   .finally(() => { O.ready = true; window.dispatchEvent(new Event("omg-online-ready")); });
