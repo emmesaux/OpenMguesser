@@ -30,7 +30,7 @@ jobs:
           FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
         run: |
           mkdir _site
-          cp index.html app.js duel.js online.js packs.js i18n.js style.css favicon.svg _site/
+          cp index.html app.js duel.js online.js packs.js i18n.js style.css favicon.svg robots.txt sitemap.xml _site/
           # FIREBASE_CONFIG è il JSON di configurazione web di Firebase (opzionale).
           jq -n --arg m "$MAPILLARY_TOKEN" --arg g "$GOOGLE_MAPS_KEY" --arg f "$FIREBASE_CONFIG" \
             '{mapillaryToken: $m, googleKey: $g, firebase: (try ($f | fromjson) catch null)}' \

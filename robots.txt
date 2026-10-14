@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://emmesaux.github.io/OpenMguesser/sitemap.xml
