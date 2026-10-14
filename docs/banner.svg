@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 290" width="900" height="290" role="img" aria-labelledby="t d">
+  <title id="t">OpenMguesser</title>
+  <desc id="d">Il logo OpenMguesser: la M è un pin che cade sulla mappa e una linea misura la distanza dal posto reale.</desc>
+  <style>
+    .word{font-family:"Avenir Next","Segoe UI","Helvetica Neue",Arial,sans-serif;font-weight:800;font-size:70px;fill:#0D2B3E;letter-spacing:-2px}
+    .tag{font-family:"Avenir Next","Segoe UI","Helvetica Neue",Arial,sans-serif;font-weight:600;font-size:22px;fill:#47636F}
+    .chip{font-family:"Avenir Next","Segoe UI","Helvetica Neue",Arial,sans-serif;font-weight:800;font-size:17px;fill:#0D2B3E}
+    .pin{animation:pin 6s infinite}
+    .arc{stroke-dasharray:1;animation:draw 6s infinite}
+    .target{transform-box:fill-box;transform-origin:center;animation:tpop 6s infinite}
+    .lab{animation:lab 6s infinite}
+    .shadow{animation:lab 6s infinite}
+    @keyframes pin{0%{transform:translateY(-130px);opacity:0}9%{transform:translateY(7px);opacity:1}12%{transform:translateY(-4px)}15%,92%{transform:translateY(0);opacity:1}97%,100%{transform:translateY(0);opacity:0}}
+    @keyframes draw{0%,15%{stroke-dashoffset:1;opacity:1}35%,92%{stroke-dashoffset:0;opacity:1}97%,100%{stroke-dashoffset:0;opacity:0}}
+    @keyframes tpop{0%,34%{transform:scale(0);opacity:1}39%{transform:scale(1.3)}43%,92%{transform:scale(1);opacity:1}97%,100%{transform:scale(1);opacity:0}}
+    @keyframes lab{0%,41%{opacity:0}47%,92%{opacity:1}97%,100%{opacity:0}}
+    @media (prefers-reduced-motion:reduce){.pin,.arc,.target,.lab,.shadow{animation:none}}
+  </style>
+  <defs><clipPath id="c"><rect width="900" height="290" rx="26"/></clipPath></defs>
+  <rect width="900" height="290" rx="26" fill="#EAF3F1"/>
+  <g clip-path="url(#c)" fill="none" stroke="#C3DBD5" stroke-width="2">
+    <ellipse cx="790" cy="20" rx="70" ry="48"/><ellipse cx="790" cy="20" rx="130" ry="90"/><ellipse cx="790" cy="20" rx="195" ry="136"/><ellipse cx="790" cy="20" rx="262" ry="182"/>
+    <ellipse cx="60" cy="290" rx="80" ry="56"/><ellipse cx="60" cy="290" rx="150" ry="104"/><ellipse cx="60" cy="290" rx="224" ry="154"/>
+  </g>
+  <rect x="1.5" y="1.5" width="897" height="287" rx="25" fill="none" stroke="#0D2B3E" stroke-width="3"/>
+
+  <!-- parola, con la M al centro come pin -->
+  <text class="word" x="356" y="130" text-anchor="end">Open</text>
+  <text class="word" x="446" y="130" text-anchor="start">guesser</text>
+  <ellipse class="shadow" cx="401" cy="153" rx="22" ry="5" fill="#0D2B3E" opacity=".18"/>
+  <g class="pin">
+    <path d="M401 152C385 128 364 114 364 93a37 37 0 1 1 74 0C438 114 417 128 401 152z" fill="#D92E47" stroke="#0D2B3E" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M384 108V79L401 98L418 79V108" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- misura della distanza -->
+  <path class="arc" pathLength="1" d="M401 154Q505 222 652 200" fill="none" stroke="#0D2B3E" stroke-width="4" stroke-linecap="round"/>
+  <circle class="target" cx="652" cy="200" r="10" fill="#FFC247" stroke="#0D2B3E" stroke-width="4"/>
+  <g class="lab">
+    <rect x="552" y="152" width="118" height="34" rx="17" fill="#FFFFFF" stroke="#0D2B3E" stroke-width="3"/>
+    <text class="chip" x="611" y="175" text-anchor="middle">1 284 km</text>
+  </g>
+
+  <text class="tag" x="450" y="258" text-anchor="middle">Cinque posti nel mondo, nessun cartello. Dove sei?</text>
+</svg>

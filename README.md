@@ -1,3 +1,15 @@
+<p align="center">
+  <img src="docs/banner.svg" alt="OpenMguesser: la M è un pin che cade sulla mappa e una linea misura la distanza" width="820">
+</p>
+
+<p align="center">
+  <a href="https://emmesaux.github.io/OpenMguesser/"><b>Gioca ora</b></a>
+  ·
+  <a href="PRIVACY.md">Privacy</a>
+  ·
+  <a href="#avvio-rapido">Avvio rapido</a>
+</p>
+
 # OpenMguesser
 
 Gioco di geolocalizzazione nel browser: vieni lasciato in un posto casuale della Terra dentro una vista panoramica navigabile, cerchi indizi (lingua, segnali, vegetazione, architettura…) e provi a indovinare dove sei sulla mappa. Più ti avvicini, più punti ottieni.
