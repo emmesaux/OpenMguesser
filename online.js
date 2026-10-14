@@ -60,14 +60,19 @@ async function init() {
     if (!O.anonymous) {
       // Account Google: ripristina il profilo salvato (nome e icona scelti, non quelli di Google).
       try {
-        const s = await fs.getDoc(fs.doc(db, "players", O.uid));
+        // Con un tempo massimo: se Firestore non risponde non si blocca l'avvio.
+        const s = await Promise.race([
+          fs.getDoc(fs.doc(db, "players", O.uid)),
+          new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 5000)),
+        ]);
         if (s.exists() && s.data().name && s.data().icon) {
           O.profile = { name: s.data().name, icon: s.data().icon };
           saveLocal(O.profile);
         }
       } catch (e) { /* si usa il profilo locale */ }
     }
-    await O._syncProfile().catch(() => {});
+    // Non si aspetta la scrittura: il setDoc di Firestore può restare in attesa se il database non risponde.
+    O._syncProfile().catch(() => {});
     notify();
   }
 

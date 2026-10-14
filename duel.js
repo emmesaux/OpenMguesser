@@ -220,6 +220,9 @@
   $("againBtn").addEventListener("click", () => { leaveDuel(); });
 
   // ---------- avvio ----------
+  setTimeout(() => {
+    if (!(O() && O().ready)) setText("onlineHint", "Connessione online lenta o non disponibile: riprovo…");
+  }, 8000);
   whenReady(() => {
     renderProfile();
     renderAuth();

@@ -142,6 +142,10 @@ Librerie caricate da CDN con controllo di integrità (SRI): Leaflet 1.9.4 e Mapi
 - Classifica e partite online
 - Selezione di regioni o continenti
 
+## Privacy
+
+Quali dati vengono trattati e per quanto tempo: vedi [PRIVACY.md](PRIVACY.md). In breve: nessun tracciamento, ospiti cancellati dopo 14 giorni, account Google conservati finché non li cancelli.
+
 ## Crediti e licenze
 
 - Immagini: [Mapillary](https://www.mapillary.com) (CC BY-SA 4.0), [Panoramax](https://panoramax.fr) (licenze aperte indicate per immagine), Google Street View (secondo i termini Google)
