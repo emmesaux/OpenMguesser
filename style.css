@@ -248,3 +248,16 @@ button.ghost.small{min-height:44px;margin-top:10px;font-size:15px}
 /* ---------- impostazioni ben visibili ---------- */
 .chip-edit{margin-left:2px;font-size:15px;opacity:.55}
 .profile-chip:hover{background:color-mix(in srgb,var(--ink) 8%,var(--card))}
+
+/* ---------- impostazioni compatte ---------- */
+.sheet-card h3{margin:20px 0 0}
+.icon-grid{grid-template-columns:repeat(8,1fr);gap:6px}
+.icon-opt{min-height:44px;font-size:22px}
+@media (max-width:520px){.icon-grid{grid-template-columns:repeat(6,1fr)}}
+.sheet-actions{position:sticky;bottom:0;z-index:2;display:flex;gap:10px;margin:22px -20px -24px;
+  padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:var(--card);border-top:1.5px solid var(--line);
+  border-radius:0 0 var(--r-sheet) var(--r-sheet)}
+.sheet-actions button{flex:1;margin-top:0}
+.danger-zone{margin-top:16px;border-top:1.5px solid var(--line)}
+.danger-zone summary{cursor:pointer;padding:14px 0 6px;font-weight:700;color:var(--ink-2)}
+.danger-zone[open] summary{color:var(--pin)}

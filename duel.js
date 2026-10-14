@@ -119,8 +119,10 @@
     setText("deleteMsg", "");
     $("deleteConfirm").hidden = true;
     $("deleteBtn").hidden = false;
+    $("deleteBox").open = false;
     renderSettings();
     show("profileEdit");
+    $("profileEdit").scrollTop = 0;
   }
   $("pEdit").addEventListener("click", openSettings);  $("rerollBtn").addEventListener("click", () => {
     if (!O()) return;
@@ -134,7 +136,7 @@
     try {
       O().setProfile({ name: $("nameInput").value, icon: pickedIcon });
       renderProfile();
-      setText("editMsg", t("set.saved"));
+      show("home"); // salvato: si torna alla home
     } catch (e) {
       setText("editMsg", e.message);
     }

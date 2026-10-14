@@ -139,8 +139,7 @@
       <button id="rerollBtn" class="ghost small" type="button" data-i18n="set.random">🎲 Nome e icona casuali</button>
       <label data-i18n="set.icon">Icona</label>
       <div id="iconGrid" class="icon-grid"></div>
-      <p class="hint" id="editMsg"></p>
-      <button id="saveProfileBtn" class="primary" data-i18n="set.save">Salva</button>
+      <p class="hint" id="editMsg" role="status"></p>
 
       <h3 data-i18n="set.lang">Lingua</h3>
       <div class="seg lang-seg" role="group">
@@ -151,7 +150,8 @@
       <h3 data-i18n="set.account">Account</h3>
       <p class="hint" id="accountStatus"></p>
       <button id="accAuthBtn" class="ghost"></button>
-      <div id="deleteBox">
+      <details id="deleteBox" class="danger-zone">
+        <summary data-i18n="set.dangerZone">Elimina i miei dati</summary>
         <button id="deleteBtn" class="danger" data-i18n="set.delete">Elimina account e dati</button>
         <p class="hint" data-i18n="set.deleteHint"></p>
         <div id="deleteConfirm" hidden>
@@ -159,10 +159,14 @@
           <button id="deleteYes" class="danger solid" data-i18n="set.deleteYes">Sì, elimina</button>
           <button id="deleteNo" class="ghost" data-i18n="set.deleteNo">No, annulla</button>
         </div>
-        <p class="hint" id="deleteMsg"></p>
-      </div>
+      </details>
+      <p class="hint" id="deleteMsg" role="status"></p>
 
-      <button id="cancelProfileBtn" class="ghost" data-i18n="set.close">Chiudi</button>
+      <!-- azioni sempre visibili in fondo, anche con la pagina lunga -->
+      <div class="sheet-actions">
+        <button id="cancelProfileBtn" class="ghost" data-i18n="set.close">Chiudi</button>
+        <button id="saveProfileBtn" class="primary" data-i18n="set.save">Salva</button>
+      </div>
     </div>
   </section>
 
