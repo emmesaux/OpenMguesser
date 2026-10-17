@@ -177,13 +177,13 @@ function googlePanoNear([lat, lon]) {
 
 // ---------- mappe di gioco: da dove si estraggono i punti ----------
 const curatedPack = () => state.pack === "capitals" || state.pack === "landmarks";
-// Restituisce [lat, lon, nome?]. Capitali e luoghi famosi: punto dell'elenco con piccola variazione (circa 3 km).
+// Restituisce [lat, lon, nomeIT?, nomeEN?]. Capitali e luoghi famosi: punto dell'elenco con piccola variazione (circa 3 km).
 function randomSpotPoint() {
   const P = window.PACKS || {};
   if (curatedPack() && Array.isArray(P[state.pack]) && P[state.pack].length) {
     const c = P[state.pack][Math.floor(Math.random() * P[state.pack].length)];
     const j = () => (Math.random() - 0.5) * 0.06;
-    return [c[0] + j(), c[1] + j(), c[2]];
+    return [c[0] + j(), c[1] + j(), c[2], c[3]];
   }
   const r = P.regions && P.regions[state.pack];
   if (r) {
@@ -193,6 +193,11 @@ function randomSpotPoint() {
     }
   }
   return randomLandPoint();
+}
+function spotLabel(lbl) {
+  if (!lbl) return "";
+  if (typeof lbl === "object") return lbl[getLang()] || lbl.it || "";
+  return String(lbl);
 }
 
 // ---------- scelta del posto ----------
@@ -212,7 +217,10 @@ async function findSpot(onProgress) {
       : state.provider === "google" ? googlePanoNear
         : (pt) => imagesAround(pt, 0.05, false);
     // Il nome del luogo (capitali, luoghi famosi) si mostra solo dopo la risposta.
-    const hits = (await Promise.all(pts.map(async (pt) => (await quiet(search(pt))).map((h) => ({ ...h, label: pt[2] || null }))))).flat();
+    const hits = (await Promise.all(pts.map(async (pt) => {
+      const label = pt[2] ? (pt[3] ? { it: pt[2], en: pt[3] } : pt[2]) : null;
+      return (await quiet(search(pt))).map((h) => ({ ...h, label }));
+    }))).flat();
     if (hits.length) {
       const panos = hits.filter((h) => h.pano);
       return pick(panos.length ? panos : hits);
@@ -221,13 +229,91 @@ async function findSpot(onProgress) {
   throw new Error(t("err.noSpot"));
 }
 
-// ---------- mappe ----------
-const tiles = () => L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap contributors" });
+// ---------- mappe (con nomi in italiano o inglese in base alla lingua scelta) ----------
+const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/bright";
+const OSM_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+let rawMapStyle = null, mapStyleProm = null;
+const activeGlLayers = new Set();
+
+function mapLabelExpr(lang) {
+  return lang === "it"
+    ? ["coalesce", ["get", "name:it"], ["get", "name:en"], ["get", "name_en"], ["get", "name:latin"], ["get", "name"]]
+    : ["coalesce", ["get", "name:en"], ["get", "name_en"], ["get", "name:latin"], ["get", "name:it"], ["get", "name"]];
+}
+function isLocalizedSymbolLayer(l) {
+  const tf = l && l.type === "symbol" && l.layout && l.layout["text-field"];
+  return Array.isArray(tf) && !l.id.includes("shield");
+}
+function buildLocalizedStyle(raw, lang) {
+  const s = JSON.parse(JSON.stringify(raw));
+  const expr = mapLabelExpr(lang);
+  for (const l of s.layers || []) {
+    if (isLocalizedSymbolLayer(l)) l.layout["text-field"] = expr;
+  }
+  return s;
+}
+function fetchMapStyle() {
+  if (rawMapStyle) return Promise.resolve(rawMapStyle);
+  if (!mapStyleProm) {
+    mapStyleProm = fetch(MAP_STYLE_URL).then((r) => {
+      if (!r.ok) throw new Error("style");
+      return r.json();
+    }).then((s) => { rawMapStyle = s; return s; }).catch((e) => { mapStyleProm = null; throw e; });
+  }
+  return mapStyleProm;
+}
+fetchMapStyle().catch(() => {});
+
+function addBaseTiles(map) {
+  const fallback = () => L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: OSM_ATTR }).addTo(map);
+  if (typeof L.maplibreGL !== "function") return fallback();
+  const mount = (raw) => {
+    if (!map._container) return;
+    try {
+      const layer = L.maplibreGL({
+        style: buildLocalizedStyle(raw, getLang()),
+        attribution: `<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> ${OSM_ATTR}`,
+      }).addTo(map);
+      activeGlLayers.add(layer);
+      map.on("unload", () => activeGlLayers.delete(layer));
+    } catch (e) {
+      fallback();
+    }
+  };
+  if (rawMapStyle) mount(rawMapStyle);
+  else fetchMapStyle().then(mount).catch(fallback);
+}
+
+function syncMapSize(map) {
+  if (!map) return;
+  map.invalidateSize();
+  activeGlLayers.forEach((l) => {
+    if (l._map === map && l._glMap) l._update();
+  });
+}
+
+function updateMapLanguage() {
+  const expr = mapLabelExpr(getLang());
+  activeGlLayers.forEach((l) => {
+    const gl = l._glMap;
+    if (!gl) return;
+    const apply = () => {
+      const s = gl.getStyle();
+      if (!s || !s.layers) return;
+      for (const lay of s.layers) {
+        if (isLocalizedSymbolLayer(lay)) {
+          try { gl.setLayoutProperty(lay.id, "text-field", expr); } catch (e) { /* ok */ }
+        }
+      }
+    };
+    if (gl.isStyleLoaded()) apply(); else gl.once("styledata", apply);
+  });
+}
 
 function initGuessMap() {
   if (guessMap) { guessMap.setView([20, 0], 1); return; }
   guessMap = L.map("guessMap", { worldCopyJump: true, minZoom: 1 }).setView([20, 0], 1);
-  tiles().addTo(guessMap);
+  addBaseTiles(guessMap);
   guessMap.on("click", (e) => {
     if (state.locked) return;
     state.guess = [e.latlng.lat, e.latlng.lng];
@@ -242,11 +328,12 @@ function initGuessMap() {
   } else {
     panel.classList.add("touch");
   }
+  panel.addEventListener("transitionend", () => syncMapSize(guessMap));
   $("mapToggle").addEventListener("click", () => {
     panelPinned = !panel.classList.contains("small") ? false : true;
     setPanelOpen(panelPinned);
   });
-  window.addEventListener("resize", () => guessMap && guessMap.invalidateSize());
+  window.addEventListener("resize", () => syncMapSize(guessMap));
 }
 
 const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -257,7 +344,7 @@ function setPanelOpen(open) {
   const tg = $("mapToggle");
   tg.textContent = open ? t("map.close") : (canHover ? t("map.desk") : t("map.touch"));
   tg.setAttribute("aria-expanded", String(open));
-  setTimeout(() => guessMap && guessMap.invalidateSize(), 220);
+  setTimeout(() => syncMapSize(guessMap), 220);
 }
 
 // ---------- viewer panoramico ----------
@@ -340,7 +427,7 @@ async function startRound() {
   initGuessMap();
   panelPinned = false;
   setPanelOpen(false);
-  setTimeout(() => guessMap.invalidateSize(), 60);
+  setTimeout(() => syncMapSize(guessMap), 60);
   $("roundLbl").textContent = t("game.round", { n: state.round + 1, max: ROUNDS });
   renderPips();
   $("scoreLbl").textContent = t("game.pts", { n: state.total.toLocaleString(loc()) });
@@ -408,12 +495,12 @@ function showResult(target, km, pts, timeout) {
   $("resDetail").textContent = km === null
     ? (timeout ? t("res.timeout") : t("res.none"))
     : t("res.distance", { d: fmtKm(km) });
-  const label = state.current && state.current.label;
+  const label = spotLabel(state.current && state.current.label);
   $("resPlace").textContent = label ? t("res.near", { name: label }) : "";
   $("nextBtn").textContent = state.round + 1 >= ROUNDS ? t("res.see") : t("res.next");
   if (resultMap) resultMap.remove();
   resultMap = L.map("resultMap", { worldCopyJump: true }).setView(target, 3);
-  tiles().addTo(resultMap);
+  addBaseTiles(resultMap);
   L.circleMarker(target, { radius: 10, color: "#0D2B3E", weight: 3, fillColor: "#FFC247", fillOpacity: 1 }).addTo(resultMap);
   const pts2 = [target];
   if (state.guess) {
@@ -421,7 +508,7 @@ function showResult(target, km, pts, timeout) {
     L.polyline([state.guess, target], { color: "#D92E47", weight: 3, dashArray: "6 9" }).addTo(resultMap);
     pts2.push(state.guess);
   }
-  setTimeout(() => { resultMap.invalidateSize(); resultMap.fitBounds(L.latLngBounds(pts2).pad(0.4), { maxZoom: 12 }); }, 60);
+  setTimeout(() => { syncMapSize(resultMap); resultMap.fitBounds(L.latLngBounds(pts2).pad(0.4), { maxZoom: 12 }); }, 60);
   if (typeof onRoundResult === "function") onRoundResult(target);
 }
 
@@ -551,8 +638,13 @@ function applyDefaultProvider() {
 }
 applyDefaultProvider();
 
-// Cambio lingua: ridisegna i testi costruiti dal codice.
+// Cambio lingua: ridisegna i testi costruiti dal codice e aggiorna la lingua della mappa.
 window.addEventListener("omg-lang-changed", () => {
   renderHome();
   setPanelOpen(!$("guessPanel").classList.contains("small"));
+  updateMapLanguage();
+  if ($("result").classList.contains("active") && state.current) {
+    const label = spotLabel(state.current.label);
+    $("resPlace").textContent = label ? t("res.near", { name: label }) : "";
+  }
 });
